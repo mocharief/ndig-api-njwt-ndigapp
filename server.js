@@ -1,9 +1,8 @@
-// server.js
+// RESTfull API NATIONAL DEFENSE INFORMATION GRID (NDIG)
+// GopaL - 2016
 
 // BASE SETUP
 // =============================================================================
-
-// call the packages we need
 var express     = require('express');        // call express
 var app         = express();                 // define our app using express
 var bodyParser  = require('body-parser');
@@ -14,12 +13,8 @@ var mongoose    = require('mongoose');
 mongoose.connect('mongodb://localhost:27017/pesanIntelDB'); // connect to our database
 
 // configure app to use bodyParser()
-// this will let us get the data from a POST
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
-
-// use it before all route definitions
-// app.use(cors({origin: 'http://localhost:9064'}));
 
 // add header
 app.all('/*', function(req, res, next) {
@@ -29,6 +24,7 @@ app.all('/*', function(req, res, next) {
 });
 
 var port = process.env.PORT || 9064;        // set our port
+
 
 // ROUTES FOR OUR API
 // =============================================================================
@@ -43,108 +39,165 @@ router.use(function(req, res, next) {
 
 // test route to make sure everything is working (accessed at GET http://localhost:8080/api)
 router.get('/', function(req, res) {
-    res.json({ message: 'hooray! welcome to our api!' });   
+    res.json({ message: 'heeloww! welcome to our api!' });   
 });
 
-// more routes for our API will happen here
 
-// on routes that end in /intel
-// ----------------------------------------------------
+
+// ROUTING NDIG START HERE
+// =============================================================================
+
+// -----------------------PESANS-----------------------------
+// A. mengakses semua pesan dan menyimpan pesan 
 router.route('/pesans')
 
-    // get all the intel msg (accessed at GET http://localhost:8080/api/intel)
+// A1. menyimpan pesan k DB
+    .post(function(req, res) {        
+        var pesan = new Pesan();      // create a new instance of the Pesan model
+        pesan.dari      = req.body.dari;  // ngisi param
+        pesan.type      = req.body.type;
+        pesan.penerima  = req.body.penerima;
+        pesan.date      = req.body.date;
+        pesan.pesan     = req.body.pesan;
+
+        // save the pesan and check for errors
+        pesan.save(function(err, pesan) {
+            if (err)
+                res.send(err);
+            res.json({ message: 'pesan '+pesan+' berhasil digenerate!' });
+        });
+    })
+
+// A2. mengakses semua pesan
     .get(function(req, res) {
-        // var intel = new Intel();      // create a new instance of the Intel model
         Pesan.find(function(err, pesans) {
             if (err)
                 res.send(err);
-
             res.json(pesans);
         });
     });
 
 
-// on routes that end in /bears
-// ----------------------------------------------------
-router.route('/bears')
-
-    // create a bear (accessed at POST http://localhost:8080/api/bears)
-    .post(function(req, res) {
-        
-        var bear = new Bear();      // create a new instance of the Bear model
-        bear.name = req.body.name;  // set the bears name (comes from the request)
-
-        // save the bear and check for errors
-        bear.save(function(err, bear) {
+// -------------------------------------------------------------------
+// B. mengakses pesan intel tertentu:
+// B1. berdasarkan pengirim
+router.route('/pesans/dari/:nama')
+    .get(function(req, res) {
+        Pesan.find({ 'dari': req.params.nama}, function (err, pesan) {
             if (err)
                 res.send(err);
-
-            res.json({ message: 'Bear created!' });
+            res.json(pesan);
         });
     })
 
-    // get all the bears (accessed at GET http://localhost:8080/api/bears)
+// B2. berdasarkan type
+router.route('/pesans/type/:tipe')
     .get(function(req, res) {
-        Bear.find(function(err, bears) {
+        Pesan.find({ 'type': req.params.tipe}, function (err, pesan) {
             if (err)
                 res.send(err);
-
-            res.json(bears);
-        });
-    });
-
-// on routes that end in /bears/:bear_id
-// ----------------------------------------------------
-router.route('/bears/:bear_id')
-
-    // get the bear with that id (accessed at GET http://localhost:8080/api/bears/:bear_id)
-    .get(function(req, res) {
-        Bear.findById(req.params.bear_id, function(err, bear) {
-            if (err)
-                res.send(err);
-
-            res.json(bear);
+            res.json(pesan);
         });
     })
 
-    // update the bear with this id (accessed at PUT http://localhost:8080/api/bears/:bear_id)
-    .put(function(req, res) {
+// B3. berdasarkan tujuan
+router.route('/pesans/ke/:nama')
+    .get(function(req, res) {
+        Pesan.find({ 'penerima': req.params.nama}, function (err, pesan) {
+            if (err)
+                res.send(err);
+            res.json(pesan);
+        });
+    })
+
+// B4. berdasarkan id tertentu
+router.route('/pesans/:pesan_id')
+    .get(function(req, res) {
+        Pesan.findById(req.params.pesan_id, function(err, pesan) {
+            if (err)
+                res.send(err);
+            res.json(pesan);
+        });
+    })
+
+
+
+// -------------------------------------------------------------------
+// C. update (put) pesan intel dgn id tertentu:
+router.route('/pesans/put/:pesan_id')
+   .put(function(req, res) {
 
         // use our bear model to find the bear we want
-        Bear.findById(req.params.bear_id, function(err, bear) {
-
+        Pesan.findById(req.params.pesan_id, function(err, pesan) {
             if (err)
                 res.send(err);
 
-            bear.name = req.body.name;  // update the bears info
+            // update the pesan 
+            pesan.dari      = req.body.dari;  
+            pesan.type      = req.body.type;
+            pesan.penerima  = req.body.penerima;
+            pesan.date      = req.body.date;
+            pesan.pesan     = req.body.pesan;
 
-            // save the bear
-            bear.save(function(err) {
+            // save the pesan
+            pesan.save(function(err) {
                 if (err)
                     res.send(err);
-
-                res.json({ message: 'Bear updated!' });
+                res.json({ message: 'Pesan updated!' });
             });
         });
     })
 
-    // delete the bear with this id (accessed at DELETE http://localhost:8080/api/bears/:bear_id)
+
+// -------------------------------------------------------------------
+// D. delete pesan intel dgn id tertentu
+router.route('/pesans/delete/:pesan_id')
     .delete(function(req, res) {
-        Bear.remove({
-            _id: req.params.bear_id
-        }, function(err, bear) {
+        Pesan.remove({_id: req.params.pesan_id}, function(err, pesan) {
             if (err)
                 res.send(err);
-
-            res.json({ message: 'Successfully deleted' });
+            res.json({ message: 'Pesan '+pesan+' successfully deleted' });
         });
     });
 
-// REGISTER OUR ROUTES -------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+// add more route from another table or database here
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// =============================================================================
 // all of our routes will be prefixed with /api
 app.use('/api', router);
 
 // START THE SERVER
 // =============================================================================
 app.listen(port);
-console.log('Magic happens on port ' + port);
+console.log(" ");
+console.log("===========================================================");
+console.log("initializing National Defense Information Grid API service");
+console.log("gopal's magic happens on port " + port);
