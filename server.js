@@ -9,9 +9,11 @@ var app         = express();                 // define our app using express
 var bodyParser  = require('body-parser');
 var Bear        = require('./app/models/bear');
 var Pesan       = require('./app/models/pesan');
+var Webpage    = require('./app/models/crawl_webpage');
 
 var mongoose    = require('mongoose');
 mongoose.connect('mongodb://localhost:27017/pesanIntelDB'); // connect to our database
+// mongoose.connect('mongodb://192.168.1.8:27017/skmchatbot_message'); // connect to our database
 
 // configure app to use bodyParser()
 // this will let us get the data from a POST
@@ -60,6 +62,23 @@ router.route('/pesans')
                 res.send(err);
 
             res.json(pesans);
+        });
+    });
+
+// more routes for our API will happen here
+
+// on routes that end in /intel
+// ----------------------------------------------------
+router.route('/crawling')
+
+    // get all the intel msg (accessed at GET http://localhost:8080/api/intel)
+    .get(function(req, res) {
+        // var intel = new Intel();      // create a new instance of the Intel model
+        Webpage.find(function(err, webpages) {
+            if (err)
+                res.send(err);
+
+            res.json(webpages);
         });
     });
 
