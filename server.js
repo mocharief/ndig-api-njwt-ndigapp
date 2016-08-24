@@ -9,10 +9,13 @@ var bodyParser  = require('body-parser');
 var Bear        = require('./app/models/bear');
 var Pesan       = require('./app/models/pesan');
 var Webpage    = require('./app/models/crawl_webpage');
+var Threat    = require('./app/models/news_analysed');
+var analyzing = require('./analyses.js')(Threat);
 
 var mongoose    = require('mongoose');
 mongoose.connect('mongodb://localhost:27017/pesanIntelDB'); // connect to our database
 // mongoose.connect('mongodb://192.168.1.8:27017/skmchatbot_message'); // connect to our database
+
 
 // configure app to use bodyParser()
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -94,6 +97,48 @@ router.route('/crawling')
 
             res.json(webpages);
         });
+    });
+router.route('/threat/:lokasi')
+
+    // get all the intel msg (accessed at GET http://localhost:8080/api/intel)
+    .get(function(req, res) {
+        // var intel = new Intel();      // create a new instance of the Intel model
+        Threat.find({"eventLocation.namaTempat" : req.params.lokasi}, function(err, threats) {
+            if (err)
+                res.send(err);
+
+            res.json(threats);
+        });
+    });
+router.route('/threat/:lokasi/:level')
+
+    // get all the intel msg (accessed at GET http://localhost:8080/api/intel)
+    .get(function(req, res) {
+        // var intel = new Intel();      // create a new instance of the Intel model
+        Threat.find({$and:[{"eventLocation.namaTempat" : req.params.lokasi},{"threatWarning": req.params.level}]}, function(err, threats) {
+            if (err)
+                res.send(err);
+
+            res.json(threats);
+        });
+    });
+router.route('/analyzing')
+
+    // get the summary of threat analyses
+    .get(function(req, res) {
+        // var intel = new Intel();      // create a new instance of the Intel model
+        
+        // res.json("{halo}");
+        analyzing.getSummary(function(summary) {
+            res.json(summary);
+        });
+
+        // Threat.find({$and:[{"eventLocation.namaTempat" : req.params.lokasi},{"threatWarning": req.params.level}]}, function(err, threats) {
+        //     if (err)
+        //         res.send(err);
+
+        //     res.json(threats);
+        // });
     });
 
 
