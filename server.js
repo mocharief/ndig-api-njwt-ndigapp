@@ -23,7 +23,7 @@ app.all('/*', function(req, res, next) {
   next();
 });
 
-var port = process.env.PORT || 9064;        // set our port
+var port = process.env.PORT || 9834;        // set our port
 
 
 // ROUTES FOR OUR API
@@ -47,6 +47,10 @@ router.get('/', function(req, res) {
 // ROUTING NDIG START HERE
 // =============================================================================
 
+// -----------------------PESANS-----------------------------
+// -----------------------PESANS-----------------------------
+// -----------------------PESANS-----------------------------
+// -----------------------PESANS-----------------------------
 // -----------------------PESANS-----------------------------
 // A. mengakses semua pesan dan menyimpan pesan 
 router.route('/pesans')
@@ -83,7 +87,7 @@ router.route('/pesans')
 // B1. berdasarkan pengirim
 router.route('/pesans/dari/:nama')
     .get(function(req, res) {
-        Pesan.find({ 'dari': req.params.nama}, function (err, pesan) {
+        Pesan.find({ 'dari': {$regex:req.params.nama, $options: 'i'}}, function (err, pesan) {
             if (err)
                 res.send(err);
             res.json(pesan);
@@ -103,7 +107,7 @@ router.route('/pesans/type/:tipe')
 // B3. berdasarkan tujuan
 router.route('/pesans/ke/:nama')
     .get(function(req, res) {
-        Pesan.find({ 'penerima': req.params.nama}, function (err, pesan) {
+        Pesan.find({ 'penerima': {$regex:req.params.nama, $options: 'i'}}, function (err, pesan) {
             if (err)
                 res.send(err);
             res.json(pesan);
@@ -117,6 +121,16 @@ router.route('/pesans/:pesan_id')
             if (err)
                 res.send(err);
             res.json(pesan);
+        });
+    })
+
+// B5. berdasarkan isi pesan (ANALISIS ISI PESAN INTEL)
+router.route('/pesans/isi/:pesan')
+    .get(function(req, res) {
+        Pesan.find({ 'pesan': {$regex:req.params.pesan, $options: 'i'}}, function (err, twitter) {
+            if (err)
+                res.send(err);
+            res.json(twitter);
         });
     })
 
@@ -163,10 +177,82 @@ router.route('/pesans/delete/:pesan_id')
 
 
 
+// -----------------------API TWITTER-----------------------------
+// -----------------------API TWITTER-----------------------------
+// -----------------------API TWITTER-----------------------------
+// -----------------------API TWITTER-----------------------------
+// -----------------------API TWITTER-----------------------------
+// A. mengakses semua twitter dan menyimpan hasil twitterAPI
+router.route('/twitters')
+
+// A1. menyimpan twitter k DB
+    .post(function(req, res) {        
+        var twitter = new Twitter();      // create a new instance of the Twitter model
+        twitter.user      = req.body.user;  
+        twitter.tweet      = req.body.tweet;
+        twitter.location  = req.body.location;
+        twitter.date      = req.body.date;
+        twitter.geolocation     = req.body.geolocation;
+
+        // save the pesan and check for errors
+        twitter.save(function(err, twitter) {
+            if (err)
+                res.send(err);
+            res.json({ message: 'twitter '+twitter+' berhasil disimpan!' });
+        });
+    })
+
+// A2. mengakses semua twitter
+    .get(function(req, res) {
+        Twitter.find(function(err, twitter) {
+            if (err)
+                res.send(err);
+            res.json(twitter);
+        });
+    });
 
 
+// -------------------------------------------------------------------
+// B. mengakses pesan Twitter tertentu:
+// B1. berdasarkan pengirim
+router.route('/twitters/user/:nama')
+    .get(function(req, res) {
+        Twitter.find({ 'user': {$regex:req.params.nama, $options: 'i'}}, function (err, twitter) {
+            if (err)
+                res.send(err);
+            res.json(twitter);
+        });
+    })
 
+// B2. berdasarkan lokasi
+router.route('/twitters/location/:loc')
+    .get(function(req, res) {
+        Twitter.find({ 'location': {$regex:req.params.loc, $options: 'i'}}, function (err, twitter) {
+            if (err)
+                res.send(err);
+            res.json(twitter);
+        });
+    })
 
+// B3. berdasarkan id tertentu
+router.route('/twitters/:pesan_id')
+    .get(function(req, res) {
+        Twitter.findById(req.params.pesan_id, function(err, twitter) {
+            if (err)
+                res.send(err);
+            res.json(twitter);
+        });
+    })
+
+// B4. berdasarkan isi tweet
+router.route('/twitters/isi/:kata')
+    .get(function(req, res) {
+        Twitter.find({ 'tweet': {$regex:req.params.kata, $options: 'i'}}, function (err, twitter) {
+            if (err)
+                res.send(err);
+            res.json(twitter);
+        });
+    })
 
 
 
