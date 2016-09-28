@@ -12,6 +12,7 @@ var AnalysedSchema  = new Schema({
     	longitude: Number
     }
 }, 
-{ collection : 'news_analysed' });
+// { collection : 'news_analysed' });
+{ collection : 'analysed_news' });
 
 module.exports = mongoose.model('Analysed', AnalysedSchema);

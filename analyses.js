@@ -4,6 +4,85 @@ module.exports = function(Threat){
 	var async = require('async');
 	var summArr = new Array();
 
+	getProvinceSummary = function (fn){
+		summArr.length = 0;
+		// Ambil list kota
+		Threat.distinct("eventLocation.daerahTingkat1", function(err, provinces) {
+			if (err)
+				res.send(err);
+
+			getEachProvSummary(provinces, fn);
+		});
+	}
+
+	getEachProvSummary = function(provinces, fn)
+	{
+		async.each(provinces, function(province , eachcallback)
+		{
+			var newSumm = new Object();
+
+			async.series([
+				function(callback) {
+					// Ambil jumlah low threats
+					Threat.find({$and:[{"eventLocation.daerahTingkat1" : province},{"threatWarning": "low"}]}, function(err, lowthreats) {
+						if (err)
+							res.send(err);
+
+						callback(null, lowthreats.length);
+					});
+				},
+				function(callback) {
+					// Ambil jumlah medium threats
+					Threat.find({$and:[{"eventLocation.daerahTingkat1" : province},{"threatWarning": "medium"}]}, function(err, medthreats) {
+						if (err)
+							res.send(err);
+
+						callback(null, medthreats.length);
+					});
+				},
+				function(callback) {
+					// Ambil jumlah high threats
+					Threat.find({$and:[{"eventLocation.daerahTingkat1" : province},{"threatWarning": "high"}]}, function(err, highthreats) {
+						if (err)
+							res.send(err);
+
+						callback(null, highthreats.length);
+					});
+				}
+			],
+			// optional callback
+			function(err, results) {
+				// results is now equal to ['one', 'two']
+				if (err) fn(err);
+
+				// push the array
+				Threat
+				.where('eventLocation.daerahTingkat1', province)
+				.select('eventLocation')
+				.limit(1)
+				.exec(function (err, docs) {
+					newSumm.lokasi = province;
+					newSumm.nLow = results[0];
+					newSumm.nMed = results[1];
+					newSumm.nHigh = results[2];
+					newSumm.lat = docs[0].eventLocation.latitude;
+					newSumm.lon = docs[0].eventLocation.longitude;
+
+					summArr.push(newSumm);
+				
+					// tell the each async that the operation for each item is finished
+					eachcallback();
+				});
+			});
+		}, 
+		function(err){
+			if (err)
+				fn(err);
+			else
+				fn(summArr);
+		});
+	}
+
 	getSummary = function (fn){
 		summArr.length = 0;
 		// Ambil list kota
@@ -87,6 +166,9 @@ module.exports = function(Threat){
 	return {
 		getSummary : function(fn){
 			getSummary(fn);
+		},
+		getProvinceSummary : function(fn){
+			getProvinceSummary(fn);
 		}
 	}
 }
