@@ -10,7 +10,11 @@ var Bear        = require('./app/models/bear');
 var Pesan       = require('./app/models/pesan');
 var Webpage    = require('./app/models/crawl_webpage');
 var Threat    = require('./app/models/news_analysed');
-var analyzing = require('./analyses.js')(Threat);
+
+// rapih2in lagi
+var News    = require('./app/models/news');
+var AnalysedNews    = require('./app/models/analysednews');
+var analyzing = require('./analyses.js')(AnalysedNews);
 
 var mongoose    = require('mongoose');
 // mongoose.connect('mongodb://localhost:27017/pesanIntelDB'); // connect to our database
@@ -87,6 +91,40 @@ router.route('/pesans')
 
 // on routes that end in /intel
 // ----------------------------------------------------
+router.route('/news')
+
+    // get all the intel msg (accessed at GET http://localhost:8080/api/intel)
+    .get(function(req, res) {
+        // var intel = new Intel();      // create a new instance of the Intel model
+        News.find(function(err, news) {
+            if (err)
+                res.send(err);
+
+            res.json(news);
+        });
+    });
+router.route('/analysednews')
+
+    // get all the intel msg (accessed at GET http://localhost:8080/api/intel)
+    .get(function(req, res) {
+        // var intel = new Intel();      // create a new instance of the Intel model
+        AnalysedNews.find(function(err, news) {
+            if (err)
+                res.send(err);
+
+            res.json(news);
+        });
+    });
+router.route('/provsummary')
+
+    // get the summary of threat analyses
+    .get(function(req, res) {
+        analyzing.getProvinceSummary(function(summary) {
+            res.json(summary);
+        });
+    });
+
+// yg bawah ini bisa jadi ga kepake lg
 router.route('/crawling')
 
     // get all the intel msg (accessed at GET http://localhost:8080/api/intel)
@@ -128,14 +166,6 @@ router.route('/analyzing')
     // get the summary of threat analyses
     .get(function(req, res) {
         analyzing.getSummary(function(summary) {
-            res.json(summary);
-        });
-    });
-router.route('/provanalyzing')
-
-    // get the summary of threat analyses
-    .get(function(req, res) {
-        analyzing.getProvinceSummary(function(summary) {
             res.json(summary);
         });
     });
