@@ -9,7 +9,6 @@ var bodyParser  = require('body-parser');
 var Bear        = require('./app/models/bear');
 var Pesan       = require('./app/models/pesan');
 var Webpage    = require('./app/models/crawl_webpage');
-var Threat    = require('./app/models/news_analysed');
 
 // rapih2in lagi
 var News    = require('./app/models/news');
@@ -115,6 +114,30 @@ router.route('/analysednews')
             res.json(news);
         });
     });
+router.route('/analysednews/:lokasi')
+
+    // get all the intel msg (accessed at GET http://localhost:8080/api/intel)
+    .get(function(req, res) {
+        // var intel = new Intel();      // create a new instance of the Intel model
+        AnalysedNews.find({"eventLocation.daerahTingkat1" : req.params.lokasi}, function(err, news) {
+            if (err)
+                res.send(err);
+
+            res.json(news);
+        });
+    });
+router.route('/analysednews/:lokasi/:level')
+
+    // get all the intel msg (accessed at GET http://localhost:8080/api/intel)
+    .get(function(req, res) {
+        // var intel = new Intel();      // create a new instance of the Intel model
+        AnalysedNews.find({$and:[{"eventLocation.daerahTingkat1" : req.params.lokasi},{"threatWarning": req.params.level}]}, function(err, news) {
+            if (err)
+                res.send(err);
+
+            res.json(news);
+        });
+    });
 router.route('/provsummary')
 
     // get the summary of threat analyses
@@ -142,7 +165,7 @@ router.route('/threat/:lokasi')
     // get all the intel msg (accessed at GET http://localhost:8080/api/intel)
     .get(function(req, res) {
         // var intel = new Intel();      // create a new instance of the Intel model
-        Threat.find({"eventLocation.namaTempat" : req.params.lokasi}, function(err, threats) {
+        AnalysedNews.find({"eventLocation.namaTempat" : req.params.lokasi}, function(err, threats) {
             if (err)
                 res.send(err);
 
@@ -154,7 +177,7 @@ router.route('/threat/:lokasi/:level')
     // get all the intel msg (accessed at GET http://localhost:8080/api/intel)
     .get(function(req, res) {
         // var intel = new Intel();      // create a new instance of the Intel model
-        Threat.find({$and:[{"eventLocation.namaTempat" : req.params.lokasi},{"threatWarning": req.params.level}]}, function(err, threats) {
+        AnalysedNews.find({$and:[{"eventLocation.namaTempat" : req.params.lokasi},{"threatWarning": req.params.level}]}, function(err, threats) {
             if (err)
                 res.send(err);
 

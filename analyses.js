@@ -1,13 +1,13 @@
 // analyses.js
 
-module.exports = function(Threat){
+module.exports = function(AnalysedNews){
 	var async = require('async');
 	var summArr = new Array();
 
 	getProvinceSummary = function (fn){
 		summArr.length = 0;
 		// Ambil list kota
-		Threat.distinct("eventLocation.daerahTingkat1", function(err, provinces) {
+		AnalysedNews.distinct("eventLocation.daerahTingkat1", function(err, provinces) {
 			if (err)
 				res.send(err);
 
@@ -24,29 +24,53 @@ module.exports = function(Threat){
 			async.series([
 				function(callback) {
 					// Ambil jumlah low threats
-					Threat.find({$and:[{"eventLocation.daerahTingkat1" : province},{"threatWarning": "low"}]}, function(err, lowthreats) {
+					AnalysedNews.find({$and:[{"eventLocation.daerahTingkat1" : province},{"threatWarning": "low"}]}, function(err, lowthreats) {
 						if (err)
 							res.send(err);
 
-						callback(null, lowthreats.length);
+						// callback(null, lowthreats.length);
+
+						// ambil summari kategori
+						AnalysedNews.distinct("queryCategory.main", {$and: [{"eventLocation.daerahTingkat1" : province}, {"threatWarning":"low"}]}, function(err, catSumm) {
+							if (err)
+								res.send(err);
+
+							callback(null, {"nLow": lowthreats.length, "catSumm": catSumm});
+						});
 					});
 				},
 				function(callback) {
 					// Ambil jumlah medium threats
-					Threat.find({$and:[{"eventLocation.daerahTingkat1" : province},{"threatWarning": "medium"}]}, function(err, medthreats) {
+					AnalysedNews.find({$and:[{"eventLocation.daerahTingkat1" : province},{"threatWarning": "medium"}]}, function(err, medthreats) {
 						if (err)
 							res.send(err);
 
-						callback(null, medthreats.length);
+						// callback(null, medthreats.length);
+
+						// ambil summari kategori
+						AnalysedNews.distinct("queryCategory.main", {$and: [{"eventLocation.daerahTingkat1" : province}, {"threatWarning":"medium"}]}, function(err, catSumm) {
+							if (err)
+								res.send(err);
+
+							callback(null, {"nMed": medthreats.length, "catSumm": catSumm});
+						});
 					});
 				},
 				function(callback) {
 					// Ambil jumlah high threats
-					Threat.find({$and:[{"eventLocation.daerahTingkat1" : province},{"threatWarning": "high"}]}, function(err, highthreats) {
+					AnalysedNews.find({$and:[{"eventLocation.daerahTingkat1" : province},{"threatWarning": "high"}]}, function(err, highthreats) {
 						if (err)
 							res.send(err);
 
-						callback(null, highthreats.length);
+						// callback(null, highthreats.length);
+
+						// ambil summari kategori
+						AnalysedNews.distinct("queryCategory.main", {$and: [{"eventLocation.daerahTingkat1" : province}, {"threatWarning":"high"}]}, function(err, catSumm) {
+							if (err)
+								res.send(err);
+
+							callback(null, {"nHigh": highthreats.length, "catSumm": catSumm});
+						});
 					});
 				}
 			],
@@ -56,15 +80,18 @@ module.exports = function(Threat){
 				if (err) fn(err);
 
 				// push the array
-				Threat
+				AnalysedNews
 				.where('eventLocation.daerahTingkat1', province)
 				.select('eventLocation')
 				.limit(1)
 				.exec(function (err, docs) {
 					newSumm.lokasi = province;
-					newSumm.nLow = results[0];
-					newSumm.nMed = results[1];
-					newSumm.nHigh = results[2];
+					newSumm.nLow = results[0].nLow;
+					newSumm.nMed = results[1].nMed;
+					newSumm.nHigh = results[2].nHigh;
+					newSumm.lowCatSumm = results[0].catSumm;
+					newSumm.medCatSumm = results[1].catSumm;
+					newSumm.highCatSumm = results[2].catSumm;
 					newSumm.lat = docs[0].eventLocation.latitude;
 					newSumm.lon = docs[0].eventLocation.longitude;
 
@@ -86,7 +113,7 @@ module.exports = function(Threat){
 	getSummary = function (fn){
 		summArr.length = 0;
 		// Ambil list kota
-		Threat.distinct("eventLocation.namaTempat", function(err, allLocations) {
+		AnalysedNews.distinct("eventLocation.namaTempat", function(err, allLocations) {
 			if (err)
 				res.send(err);
 
@@ -103,7 +130,7 @@ module.exports = function(Threat){
 			async.series([
 				function(callback) {
 					// Ambil jumlah low threats
-					Threat.find({$and:[{"eventLocation.namaTempat" : location},{"threatWarning": "low"}]}, function(err, lowthreats) {
+					AnalysedNews.find({$and:[{"eventLocation.namaTempat" : location},{"threatWarning": "low"}]}, function(err, lowthreats) {
 						if (err)
 							res.send(err);
 
@@ -112,7 +139,7 @@ module.exports = function(Threat){
 				},
 				function(callback) {
 					// Ambil jumlah medium threats
-					Threat.find({$and:[{"eventLocation.namaTempat" : location},{"threatWarning": "medium"}]}, function(err, medthreats) {
+					AnalysedNews.find({$and:[{"eventLocation.namaTempat" : location},{"threatWarning": "medium"}]}, function(err, medthreats) {
 						if (err)
 							res.send(err);
 
@@ -121,7 +148,7 @@ module.exports = function(Threat){
 				},
 				function(callback) {
 					// Ambil jumlah high threats
-					Threat.find({$and:[{"eventLocation.namaTempat" : location},{"threatWarning": "high"}]}, function(err, highthreats) {
+					AnalysedNews.find({$and:[{"eventLocation.namaTempat" : location},{"threatWarning": "high"}]}, function(err, highthreats) {
 						if (err)
 							res.send(err);
 
@@ -135,7 +162,7 @@ module.exports = function(Threat){
 				if (err) fn(err);
 
 				// push the array
-				Threat
+				AnalysedNews
 				.where('eventLocation.namaTempat', location)
 				.select('eventLocation')
 				.limit(1)
