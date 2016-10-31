@@ -23,7 +23,8 @@ var AnalysedNewsSchema  = new Schema({
     	longitude: Number
     },
     threatWarning: String,
-    timestamp: Date
+    timestamp: Date,
+    eventLoc_dt1: String
 }, 
 // { collection : 'news_analysed' });
 { collection : 'analysed_news' });

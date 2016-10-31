@@ -7,7 +7,7 @@ module.exports = function(AnalysedNews){
 	getProvinceSummary = function (fn){
 		summArr.length = 0;
 		// Ambil list kota
-		AnalysedNews.distinct("eventLocation.daerahTingkat1", function(err, provinces) {
+		AnalysedNews.distinct("eventLoc_dt1", function(err, provinces) {
 			if (err)
 				res.send(err);
 
@@ -24,14 +24,14 @@ module.exports = function(AnalysedNews){
 			async.series([
 				function(callback) {
 					// Ambil jumlah low threats
-					AnalysedNews.find({$and:[{"eventLocation.daerahTingkat1" : province},{"threatWarning": "low"}]}, function(err, lowthreats) {
+					AnalysedNews.find({$and:[{"eventLoc_dt1" : province},{"threatWarning": "low"}]}, function(err, lowthreats) {
 						if (err)
 							res.send(err);
 
 						// callback(null, lowthreats.length);
 
 						// ambil summari kategori
-						AnalysedNews.distinct("queryCategory.main", {$and: [{"eventLocation.daerahTingkat1" : province}, {"threatWarning":"low"}]}, function(err, catSumm) {
+						AnalysedNews.distinct("category_main", {$and: [{"eventLoc_dt1" : province}, {"threatWarning":"low"}]}, function(err, catSumm) {
 							if (err)
 								res.send(err);
 
@@ -41,14 +41,14 @@ module.exports = function(AnalysedNews){
 				},
 				function(callback) {
 					// Ambil jumlah medium threats
-					AnalysedNews.find({$and:[{"eventLocation.daerahTingkat1" : province},{"threatWarning": "medium"}]}, function(err, medthreats) {
+					AnalysedNews.find({$and:[{"eventLoc_dt1" : province},{"threatWarning": "medium"}]}, function(err, medthreats) {
 						if (err)
 							res.send(err);
 
 						// callback(null, medthreats.length);
 
 						// ambil summari kategori
-						AnalysedNews.distinct("queryCategory.main", {$and: [{"eventLocation.daerahTingkat1" : province}, {"threatWarning":"medium"}]}, function(err, catSumm) {
+						AnalysedNews.distinct("category_main", {$and: [{"eventLoc_dt1" : province}, {"threatWarning":"medium"}]}, function(err, catSumm) {
 							if (err)
 								res.send(err);
 
@@ -58,14 +58,14 @@ module.exports = function(AnalysedNews){
 				},
 				function(callback) {
 					// Ambil jumlah high threats
-					AnalysedNews.find({$and:[{"eventLocation.daerahTingkat1" : province},{"threatWarning": "high"}]}, function(err, highthreats) {
+					AnalysedNews.find({$and:[{"eventLoc_dt1" : province},{"threatWarning": "high"}]}, function(err, highthreats) {
 						if (err)
 							res.send(err);
 
 						// callback(null, highthreats.length);
 
 						// ambil summari kategori
-						AnalysedNews.distinct("queryCategory.main", {$and: [{"eventLocation.daerahTingkat1" : province}, {"threatWarning":"high"}]}, function(err, catSumm) {
+						AnalysedNews.distinct("category_main", {$and: [{"eventLoc_dt1" : province}, {"threatWarning":"high"}]}, function(err, catSumm) {
 							if (err)
 								res.send(err);
 
@@ -81,7 +81,7 @@ module.exports = function(AnalysedNews){
 
 				// push the array
 				AnalysedNews
-				.where('eventLocation.daerahTingkat1', province)
+				.where('eventLoc_dt1', province)
 				.select('eventLocation')
 				.limit(1)
 				.exec(function (err, docs) {
