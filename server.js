@@ -10,7 +10,7 @@ var Pesan       = require('./app/models/pesan');
 var Twitter     = require('./app/models/twitter');
 var Webpage     = require('./app/models/crawl_webpage');
 var Threat      = require('./app/models/analysed_news');
-var ThreatAll   = require('./app/models/analysed_all');
+// var ThreatAll   = require('./app/models/analysed_all');
 var analyzing   = require('./analyses.js')(Threat);
 
 var mongoose    = require('mongoose');
