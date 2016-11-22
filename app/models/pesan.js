@@ -6,9 +6,10 @@ var Schema       = mongoose.Schema;
 var PesanSchema  = new Schema({
     dari: String,
     type: String,
-    penerima: String,
     date: Date,
     pesan: String
-});
+}, 
+// { collection : 'news_analysed' });
+{ collection : 'pesanintel_raw' });
 
 module.exports = mongoose.model('Pesan', PesanSchema);
