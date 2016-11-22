@@ -34,7 +34,6 @@ app.all('/*', function(req, res, next) {
 var port = process.env.PORT || 9099;        // set our port
 var START, END;
 
-
 // ROUTES FOR OUR API
 // =============================================================================
 var router = express.Router();              // get an instance of the express Router
@@ -93,7 +92,7 @@ router.route('/rawpesans')
 // B1. berdasarkan pengirim
 router.route('/rawpesans/dari/:nama')
     .get(function(req, res) {
-        Pesan.find({ 'dari': req.params.nama}, function (err, pesan) {
+        Pesan.find({ 'dari': {$regex:req.params.nama, $options: 'i'}}, function (err, pesan) {
             if (err)
                 res.send(err);
             res.json(pesan);
@@ -132,6 +131,17 @@ router.route('/rawpesans/:st/:fn')
             res.json(pesan);
         });
     })
+
+// B5. berdasarkan isi pesan (ANALISIS ISI PESAN INTEL)
+router.route('/rawpesans/isi/:pesan')
+    .get(function(req, res) {
+        Pesan.find({ 'pesan': {$regex:req.params.pesan, $options: 'i'}}, function (err, pesan) {
+            if (err)
+                res.send(err);
+            res.json(twitter);
+        });
+    })
+
 
 // -------------------------------------------------------------------
 // C. update (put) pesan intel dgn id tertentu:
@@ -309,8 +319,47 @@ router.route('/provanalyzing')
 
 
 
+// // -------------------------------------------------------------------
+// // B. mengakses pesan Twitter tertentu:
+// // B1. berdasarkan pengirim
+// router.route('/twitters/user/:nama')
+//     .get(function(req, res) {
+//         Twitter.find({ 'user': {$regex:req.params.nama, $options: 'i'}}, function (err, twitter) {
+//             if (err)
+//                 res.send(err);
+//             res.json(twitter);
+//         });
+//     })
 
+// // B2. berdasarkan lokasi
+// router.route('/twitters/location/:loc')
+//     .get(function(req, res) {
+//         Twitter.find({ 'location': {$regex:req.params.loc, $options: 'i'}}, function (err, twitter) {
+//             if (err)
+//                 res.send(err);
+//             res.json(twitter);
+//         });
+//     })
 
+// // B3. berdasarkan id tertentu
+// router.route('/twitters/:pesan_id')
+//     .get(function(req, res) {
+//         Twitter.findById(req.params.pesan_id, function(err, twitter) {
+//             if (err)
+//                 res.send(err);
+//             res.json(twitter);
+//         });
+//     })
+
+// // B4. berdasarkan isi tweet
+// router.route('/twitters/isi/:kata')
+//     .get(function(req, res) {
+//         Twitter.find({ 'tweet': {$regex:req.params.kata, $options: 'i'}}, function (err, twitter) {
+//             if (err)
+//                 res.send(err);
+//             res.json(twitter);
+//         });
+//     })
 
 
 
