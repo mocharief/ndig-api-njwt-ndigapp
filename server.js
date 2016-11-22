@@ -6,8 +6,8 @@
 var express     = require('express');        // call express
 var app         = express();                 // define our app using express
 var bodyParser  = require('body-parser');
-var Bear        = require('./app/models/bear');
 var Pesan       = require('./app/models/pesan');
+var Twitter     = require('./app/models/twitter');
 var Webpage    = require('./app/models/crawl_webpage');
 
 // rapih2in lagi
@@ -32,8 +32,9 @@ app.all('/*', function(req, res, next) {
   next();
 });
 
-var port = process.env.PORT || 9064;        // set our port
-
+// GLOBAL VARIABEL
+var port = process.env.PORT || 9099;        // set our port
+var START, END;
 
 // ROUTES FOR OUR API
 // =============================================================================
@@ -51,21 +52,22 @@ router.get('/', function(req, res) {
     res.json({ message: 'heeloww! welcome to our api!' });   
 });
 
-
-
 // ROUTING NDIG START HERE
 // =============================================================================
 
 // -----------------------PESANS-----------------------------
+// -----------------------PESANS-----------------------------
+// -----------------------PESANS-----------------------------
+// -----------------------PESANS-----------------------------
+
 // A. mengakses semua pesan dan menyimpan pesan 
-router.route('/pesans')
+router.route('/rawpesans')
 
 // A1. menyimpan pesan k DB
     .post(function(req, res) {        
         var pesan = new Pesan();      // create a new instance of the Pesan model
         pesan.dari      = req.body.dari;  // ngisi param
         pesan.type      = req.body.type;
-        pesan.penerima  = req.body.penerima;
         pesan.date      = req.body.date;
         pesan.pesan     = req.body.pesan;
 
@@ -197,9 +199,9 @@ router.route('/analyzing')
 // -------------------------------------------------------------------
 // B. mengakses pesan intel tertentu:
 // B1. berdasarkan pengirim
-router.route('/pesans/dari/:nama')
+router.route('/rawpesans/dari/:nama')
     .get(function(req, res) {
-        Pesan.find({ 'dari': req.params.nama}, function (err, pesan) {
+        Pesan.find({ 'dari': {$regex:req.params.nama, $options: 'i'}}, function (err, pesan) {
             if (err)
                 res.send(err);
             res.json(pesan);
@@ -207,7 +209,7 @@ router.route('/pesans/dari/:nama')
     })
 
 // B2. berdasarkan type
-router.route('/pesans/type/:tipe')
+router.route('/rawpesans/type/:tipe')
     .get(function(req, res) {
         Pesan.find({ 'type': req.params.tipe}, function (err, pesan) {
             if (err)
@@ -216,18 +218,8 @@ router.route('/pesans/type/:tipe')
         });
     })
 
-// B3. berdasarkan tujuan
-router.route('/pesans/ke/:nama')
-    .get(function(req, res) {
-        Pesan.find({ 'penerima': req.params.nama}, function (err, pesan) {
-            if (err)
-                res.send(err);
-            res.json(pesan);
-        });
-    })
-
-// B4. berdasarkan id tertentu
-router.route('/pesans/:pesan_id')
+// B3. berdasarkan id tertentu
+router.route('/rawpesans/:pesan_id')
     .get(function(req, res) {
         Pesan.findById(req.params.pesan_id, function(err, pesan) {
             if (err)
@@ -236,11 +228,33 @@ router.route('/pesans/:pesan_id')
         });
     })
 
+// B4. berdasarkan date tertentu
+router.route('/rawpesans/:st/:fn')
+    .get(function(req, res) {
+        START = new Date(req.params.st);
+        END = new Date(req.params.fn);
+        END.setDate(END.getDate() + 1);
+        Pesan.find({'date': {$gt: START, $lte: END}}, function(err, pesan) {
+            if (err)
+                res.send(err);
+            res.json(pesan);
+        });
+    })
+
+// B5. berdasarkan isi pesan (ANALISIS ISI PESAN INTEL)
+router.route('/rawpesans/isi/:pesan')
+    .get(function(req, res) {
+        Pesan.find({ 'pesan': {$regex:req.params.pesan, $options: 'i'}}, function (err, pesan) {
+            if (err)
+                res.send(err);
+            res.json(twitter);
+        });
+    })
 
 
 // -------------------------------------------------------------------
 // C. update (put) pesan intel dgn id tertentu:
-router.route('/pesans/put/:pesan_id')
+router.route('/rawpesans/put/:pesan_id')
    .put(function(req, res) {
 
         // use our bear model to find the bear we want
@@ -264,10 +278,9 @@ router.route('/pesans/put/:pesan_id')
         });
     })
 
-
 // -------------------------------------------------------------------
 // D. delete pesan intel dgn id tertentu
-router.route('/pesans/delete/:pesan_id')
+router.route('/rawpesans/delete/:pesan_id')
     .delete(function(req, res) {
         Pesan.remove({_id: req.params.pesan_id}, function(err, pesan) {
             if (err)
@@ -279,10 +292,183 @@ router.route('/pesans/delete/:pesan_id')
 
 
 
+// -----------------------TWITTER-----------------------------
+// -----------------------TWITTER-----------------------------
+// -----------------------TWITTER-----------------------------
+// -----------------------TWITTER-----------------------------
+// mengakses semua twitter dan menyimpan twitter
+router.route('/rawtwitters')
+   .post(function(req, res) {        
+        var twitter = new Twitter();      // create a new instance of the Pesan model
+        twitter.user        = req.body.user;  // ngisi param
+        twitter.location    = req.body.location;
+        twitter.geolocation = req.body.geolocation;
+        twitter.date        = req.body.date;
+        twitter.tweet       = req.body.tweet;
+
+        // save the pesan and check for errors
+        twitter.save(function(err, twit) {
+            if (err)
+                res.send(err);
+            res.json({ message: 'tweet '+twit+' berhasil digenerate!' });
+        });
+    })
+
+    .get(function(req, res) {
+        Twitter.find(function(err, twit) {
+            if (err)
+                res.send(err);
+            res.json(twit);
+        });
+    });
+
+// router.route('/rawtwitters/:st/:fn')
+//     .get(function(req, res) {
+//         START = new Date(req.params.st);
+//         END = new Date(req.params.fn);
+//         END.setDate(END.getDate() + 1);
+//         Twitter.find({'date': {$gt: START, $lte: END}}, function(err, twit) {
+//             if (err)
+//                 res.send(err);
+//             res.json(twit);
+//         });
+//     })
+
+
+
+// -----------------------CRAWING, THREAT, dan ANALYZED-----------------------------
+// -----------------------CRAWING, THREAT, dan ANALYZED-----------------------------
+// -----------------------CRAWING, THREAT, dan ANALYZED-----------------------------
+
+router.route('/crawling')
+
+    // get all the intel msg (accessed at GET http://localhost:8080/api/intel)
+    .get(function(req, res) {
+        // var intel = new Intel();      // create a new instance of the Intel model
+        Webpage.find(function(err, webpages) {
+            if (err)
+                res.send(err);
+
+            res.json(webpages);
+        });
+    });
+
+router.route('/threat')
+
+    // get all the intel msg (accessed at GET http://localhost:8080/api/intel)
+    .get(function(req, res) {
+        // var intel = new Intel();      // create a new instance of the Intel model
+        Threat.find(function(err, threats) {
+            if (err)
+                res.send(err);
+
+            res.json(threats);
+        });
+    });
+
+router.route('/threat/lokasi/dt1/:lokasi')
+    .get(function(req, res) {
+        Threat.find({ 'eventLocation.daerahTingkat1': {$regex:req.params.lokasi, $options: 'i'}}, function(err, threats) {
+            if (err)
+                res.send(err);
+
+            res.json(threats);
+        });
+    });
+
+router.route('/threat/lokasi/dt2/:lokasi')
+    .get(function(req, res) {
+        Threat.find({ 'eventLocation.daerahTingkat2': {$regex:req.params.lokasi, $options: 'i'}}, function(err, threats) {
+            if (err)
+                res.send(err);
+
+            res.json(threats);
+        });
+    });
+
+router.route('/threat/level/:level')
+    .get(function(req, res) {
+        Threat.find({"threatWarning" : req.params.level}, function(err, threats) {
+            if (err)
+                res.send(err);
+
+            res.json(threats);
+        });
+    });
+
+router.route('/threat/:lokasi/:level')
+    .get(function(req, res) {
+        Threat.find({$and:[{ 'eventLocation.daerahTingkat1': {$regex:req.params.lokasi, $options: 'i'}},{"threatWarning": req.params.level}]}, function(err, threats) {
+            if (err)
+                res.send(err);
+
+            res.json(threats);
+        });
+    });
+
+// router.route('/analyzing')
+//     // get the summary of threat analyses
+//     .get(function(req, res) {
+//         analyzing.getSummary(function(summary) {
+//             res.json(summary);
+//         });
+//     });
+
+router.route('/provanalyzing')
+
+    // get the summary of threat analyses
+    .get(function(req, res) {
+        analyzing.getProvinceSummary(function(summary) {
+            res.json(summary);
+        });
+    });
 
 
 
 
+
+
+// // -------------------------------------------------------------------
+// // B. mengakses pesan Twitter tertentu:
+// // B1. berdasarkan pengirim
+// router.route('/twitters/user/:nama')
+//     .get(function(req, res) {
+//         Twitter.find({ 'user': {$regex:req.params.nama, $options: 'i'}}, function (err, twitter) {
+//             if (err)
+//                 res.send(err);
+//             res.json(twitter);
+//         });
+//     })
+
+// // B2. berdasarkan lokasi
+// router.route('/twitters/location/:loc')
+//     .get(function(req, res) {
+//         Twitter.find({ 'location': {$regex:req.params.loc, $options: 'i'}}, function (err, twitter) {
+//             if (err)
+//                 res.send(err);
+//             res.json(twitter);
+//         });
+//     })
+
+// // B3. berdasarkan id tertentu
+// router.route('/twitters/:pesan_id')
+//     .get(function(req, res) {
+//         Twitter.findById(req.params.pesan_id, function(err, twitter) {
+//             if (err)
+//                 res.send(err);
+//             res.json(twitter);
+//         });
+//     })
+
+// // B4. berdasarkan isi tweet
+// router.route('/twitters/isi/:kata')
+//     .get(function(req, res) {
+//         Twitter.find({ 'tweet': {$regex:req.params.kata, $options: 'i'}}, function (err, twitter) {
+//             if (err)
+//                 res.send(err);
+//             res.json(twitter);
+//         });
+//     })
 
 
 
