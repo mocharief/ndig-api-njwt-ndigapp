@@ -8,12 +8,11 @@ var app         = express();                 // define our app using express
 var bodyParser  = require('body-parser');
 var Pesan       = require('./app/models/pesan');
 var Twitter     = require('./app/models/twitter');
-var Webpage    = require('./app/models/crawl_webpage');
 
-// rapih2in lagi
-var News    = require('./app/models/news');
-var AnalysedNews    = require('./app/models/analysednews');
-var analyzing = require('./analyses.js')(AnalysedNews);
+var AnalysedInfo    = require('./app/models/analysedinfo');
+var analyzing = require('./analyses.js')(AnalysedInfo);
+// var News    = require('./app/models/news');
+// var Webpage    = require('./app/models/crawl_webpage');
 
 var mongoose    = require('mongoose');
 // mongoose.connect('mongodb://localhost:27017/pesanIntelDB'); // connect to our database
@@ -85,113 +84,6 @@ router.route('/rawpesans')
             if (err)
                 res.send(err);
             res.json(pesans);
-        });
-    });
-
-// more routes for our API will happen here
-
-// on routes that end in /intel
-// ----------------------------------------------------
-router.route('/news')
-
-    // get all the intel msg (accessed at GET http://localhost:8080/api/intel)
-    .get(function(req, res) {
-        // var intel = new Intel();      // create a new instance of the Intel model
-        News.find(function(err, news) {
-            if (err)
-                res.send(err);
-
-            res.json(news);
-        });
-    });
-router.route('/analysednews')
-
-    // get all the intel msg (accessed at GET http://localhost:8080/api/intel)
-    .get(function(req, res) {
-        // var intel = new Intel();      // create a new instance of the Intel model
-        AnalysedNews.find(function(err, news) {
-            if (err)
-                res.send(err);
-
-            res.json(news);
-        });
-    });
-router.route('/analysednews/:lokasi')
-
-    // get all the intel msg (accessed at GET http://localhost:8080/api/intel)
-    .get(function(req, res) {
-        // var intel = new Intel();      // create a new instance of the Intel model
-        AnalysedNews.find({"eventLocation.daerahTingkat1" : req.params.lokasi}, function(err, news) {
-            if (err)
-                res.send(err);
-
-            res.json(news);
-        });
-    });
-router.route('/analysednews/:lokasi/:level')
-
-    // get all the intel msg (accessed at GET http://localhost:8080/api/intel)
-    .get(function(req, res) {
-        // var intel = new Intel();      // create a new instance of the Intel model
-        AnalysedNews.find({$and:[{"eventLocation.daerahTingkat1" : req.params.lokasi},{"threatWarning": req.params.level}]}, function(err, news) {
-            if (err)
-                res.send(err);
-
-            res.json(news);
-        });
-    });
-router.route('/provsummary')
-
-    // get the summary of threat analyses
-    .get(function(req, res) {
-        analyzing.getProvinceSummary(function(summary) {
-            res.json(summary);
-        });
-    });
-
-// yg bawah ini bisa jadi ga kepake lg
-router.route('/crawling')
-
-    // get all the intel msg (accessed at GET http://localhost:8080/api/intel)
-    .get(function(req, res) {
-        // var intel = new Intel();      // create a new instance of the Intel model
-        Webpage.find(function(err, webpages) {
-            if (err)
-                res.send(err);
-
-            res.json(webpages);
-        });
-    });
-router.route('/threat/:lokasi')
-
-    // get all the intel msg (accessed at GET http://localhost:8080/api/intel)
-    .get(function(req, res) {
-        // var intel = new Intel();      // create a new instance of the Intel model
-        AnalysedNews.find({"eventLocation.namaTempat" : req.params.lokasi}, function(err, threats) {
-            if (err)
-                res.send(err);
-
-            res.json(threats);
-        });
-    });
-router.route('/threat/:lokasi/:level')
-
-    // get all the intel msg (accessed at GET http://localhost:8080/api/intel)
-    .get(function(req, res) {
-        // var intel = new Intel();      // create a new instance of the Intel model
-        AnalysedNews.find({$and:[{"eventLocation.namaTempat" : req.params.lokasi},{"threatWarning": req.params.level}]}, function(err, threats) {
-            if (err)
-                res.send(err);
-
-            res.json(threats);
-        });
-    });
-router.route('/analyzing')
-
-    // get the summary of threat analyses
-    .get(function(req, res) {
-        analyzing.getSummary(function(summary) {
-            res.json(summary);
         });
     });
 
@@ -322,109 +214,6 @@ router.route('/rawtwitters')
         });
     });
 
-// router.route('/rawtwitters/:st/:fn')
-//     .get(function(req, res) {
-//         START = new Date(req.params.st);
-//         END = new Date(req.params.fn);
-//         END.setDate(END.getDate() + 1);
-//         Twitter.find({'date': {$gt: START, $lte: END}}, function(err, twit) {
-//             if (err)
-//                 res.send(err);
-//             res.json(twit);
-//         });
-//     })
-
-
-
-// -----------------------CRAWING, THREAT, dan ANALYZED-----------------------------
-// -----------------------CRAWING, THREAT, dan ANALYZED-----------------------------
-// -----------------------CRAWING, THREAT, dan ANALYZED-----------------------------
-
-router.route('/crawling')
-
-    // get all the intel msg (accessed at GET http://localhost:8080/api/intel)
-    .get(function(req, res) {
-        // var intel = new Intel();      // create a new instance of the Intel model
-        Webpage.find(function(err, webpages) {
-            if (err)
-                res.send(err);
-
-            res.json(webpages);
-        });
-    });
-
-router.route('/threat')
-
-    // get all the intel msg (accessed at GET http://localhost:8080/api/intel)
-    .get(function(req, res) {
-        // var intel = new Intel();      // create a new instance of the Intel model
-        Threat.find(function(err, threats) {
-            if (err)
-                res.send(err);
-
-            res.json(threats);
-        });
-    });
-
-router.route('/threat/lokasi/dt1/:lokasi')
-    .get(function(req, res) {
-        Threat.find({ 'eventLocation.daerahTingkat1': {$regex:req.params.lokasi, $options: 'i'}}, function(err, threats) {
-            if (err)
-                res.send(err);
-
-            res.json(threats);
-        });
-    });
-
-router.route('/threat/lokasi/dt2/:lokasi')
-    .get(function(req, res) {
-        Threat.find({ 'eventLocation.daerahTingkat2': {$regex:req.params.lokasi, $options: 'i'}}, function(err, threats) {
-            if (err)
-                res.send(err);
-
-            res.json(threats);
-        });
-    });
-
-router.route('/threat/level/:level')
-    .get(function(req, res) {
-        Threat.find({"threatWarning" : req.params.level}, function(err, threats) {
-            if (err)
-                res.send(err);
-
-            res.json(threats);
-        });
-    });
-
-router.route('/threat/:lokasi/:level')
-    .get(function(req, res) {
-        Threat.find({$and:[{ 'eventLocation.daerahTingkat1': {$regex:req.params.lokasi, $options: 'i'}},{"threatWarning": req.params.level}]}, function(err, threats) {
-            if (err)
-                res.send(err);
-
-            res.json(threats);
-        });
-    });
-
-// router.route('/analyzing')
-//     // get the summary of threat analyses
-//     .get(function(req, res) {
-//         analyzing.getSummary(function(summary) {
-//             res.json(summary);
-//         });
-//     });
-
-router.route('/provanalyzing')
-
-    // get the summary of threat analyses
-    .get(function(req, res) {
-        analyzing.getProvinceSummary(function(summary) {
-            res.json(summary);
-        });
-    });
-
-
-
 
 
 
@@ -472,25 +261,32 @@ router.route('/provanalyzing')
 
 
 
+// -----------------------ANALYSED INFO-----------------------------
+// -----------------------ANALYSED INFO-----------------------------
+// -----------------------ANALYSED INFO-----------------------------
+// -----------------------ANALYSED INFO-----------------------------
 
+// A. mengakses semua analysed info (hasil analisa dias)
+router.route('/analysedinfo')
+    .get(function(req, res) {
+        // var intel = new Intel();      // create a new instance of the Intel model
+        AnalysedInfo.find(function(err, news) {
+            if (err)
+                res.send(err);
 
-// add more route from another table or database here
+            res.json(news);
+        });
+    });
 
+// A. mengakses summari analysed info tiap provinsi
+router.route('/threatsummary')
+    .get(function(req, res) {
+        analyzing.getProvinceSummary(function(summary) {
+            res.json(summary);
+        });
+    });
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    
 
 // =============================================================================
 // all of our routes will be prefixed with /api
