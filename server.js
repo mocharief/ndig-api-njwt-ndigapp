@@ -286,7 +286,16 @@ router.route('/threatsummary')
         });
     });
 
-    
+
+router.route('/analysedinfo/:source/:threatlevel/:place')
+    .delete(function(req, res) {
+        Pesan.remove({_id: req.params.pesan_id}, function(err, pesan) {
+            if (err)
+                res.send(err);
+            res.json({ message: 'Pesan '+pesan+' successfully deleted' });
+        });
+    });
+
 
 // =============================================================================
 // all of our routes will be prefixed with /api
