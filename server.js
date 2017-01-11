@@ -287,14 +287,47 @@ router.route('/threatsummary')
     });
 
 
-router.route('/analysedinfo/:source/:threatlevel/:place')
-    .delete(function(req, res) {
-        Pesan.remove({_id: req.params.pesan_id}, function(err, pesan) {
+// router.route('/analysedinfo/:source/:threatlevel/:place')
+//     .get(function(req, res) {
+//         Pesan.remove({_id: req.params.pesan_id}, function(err, pesan) {
+//             if (err)
+//                 res.send(err);
+//             res.json({ message: 'Pesan '+pesan+' successfully deleted' });
+//         });
+//     });
+
+
+// TAMBAHAN
+// ./api/analysedinfo/category/{paramCat}
+// ./api/analysedinfo/threatlevel/{paramLev}
+
+// paramCat = lihat documentCategories.json
+// paramLev = [low, med, high]
+
+router.route('/analysedinfo/category/:paramcat')
+    .get(function(req, res) {
+        AnalysedInfo.find({ 'categoryMain': req.params.paramcat}, function (err, info) {
             if (err)
                 res.send(err);
-            res.json({ message: 'Pesan '+pesan+' successfully deleted' });
+            res.json(info);
         });
     });
+
+router.route('/analysedinfo/threatlevel/:paramlev')
+    .get(function(req, res) {
+        AnalysedInfo.find({ 'threatWarning': req.params.paramlev}, function (err, info) {
+            if (err)
+                res.send(err);
+            res.json(info);
+        });
+    });
+
+
+
+
+
+
+
 
 
 // =============================================================================

@@ -5,28 +5,23 @@ var Schema       = mongoose.Schema;
 
 var AnalysedInfoSchema  = new Schema({
 	_id: String,
-    queryTitle: String,
-    queryUrl: String,
-    queryCategory: {
-    	main: String,
-    	sub1: String,
-    	sub2: String
-    },
-    eventDate: {
-    	date: Date,
-    	string: String
-    },
-    eventLocation: {
-    	daerahTingkat2: String,
-    	daerahTingkat1: String,
-    	latitude: Number,
-    	longitude: Number
-    },
+    dataSource: String,
+    sourceMongoHost: String,
+    sourceMongoPort: String,
+    sourceDbName: String,
+    sourceCollection: String,
+    categoryMain: String,
+    categorySub1: String,
+    categorySub2: String,
+    sourceObjectId: String,
+    contentSubject: String,
+    eventDateDate: Date,
+    eventDateString: String,
+    contentLocator: String,
     threatWarning: String,
-    timestamp: Date,
-    eventLoc_dt1: String
+    timeStamp: Date
 }, 
 // { collection : 'news_analysed' });
-{ collection : 'analysed_news' });
+{ collection : 'analysed_info' });
 
 module.exports = mongoose.model('AnalysedInfo', AnalysedInfoSchema);
