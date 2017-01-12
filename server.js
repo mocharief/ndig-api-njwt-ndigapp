@@ -310,7 +310,7 @@ router.route('/analysedinfo/filter/:paramwaktu/source/:paramsource')
         if (req.params.paramsource == "all"){source = null} else {source = req.params.paramsource};
         AnalysedInfo.find({
             $and: [
-                  {'dataSource': req.param.paramsource},
+                  {'dataSource': source},
                   {'eventDateDate': {$gt: new Date(start)}} //sama dengan date.month bulan ini
             ]
         }, function (err, info) {
