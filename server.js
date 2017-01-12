@@ -297,59 +297,139 @@ router.route('/analysedinfo')
         });
     });
 
-// A2. dashboard - source 
+
+// A2. DASHBOARD - FILTER - SOURCE 
+// paramsource = [all, news, twitter, intel]
+// paramwaktu = [lastday, lastweek, lastmonth, lastyear]
 router.route('/analysedinfo/filter/:paramwaktu/source/:paramsource')
     .get(function(req, res) {
-        var start, source;
+        var start;
         var today = new Date();
         if (req.params.paramwaktu == "lastday"){start = new Date().setDate(today.getDate()-1)};
         if (req.params.paramwaktu == "lastweek"){start = new Date().setDate(today.getDate()-7)};
         if (req.params.paramwaktu == "lastmonth"){start = new Date().setDate(today.getDate()-30)};
         if (req.params.paramwaktu == "lastyear"){start = new Date().setDate(today.getDate()-365)};
         
-        if (req.params.paramsource == "all"){source = null} else {source = req.params.paramsource};
-        AnalysedInfo.find({
-            $and: [
-                  {'dataSource': source},
-                  {'eventDateDate': {$gt: new Date(start)}} //sama dengan date.month bulan ini
-            ]
-        }, function (err, info) {
-            if (err)
-                res.send(err);
-            res.json(info);
-        });
+        if (req.params.paramsource == "all"){
+            AnalysedInfo.find({'eventDateDate': {$gt: new Date(start)}}, function (err, info) {
+                if (err)
+                    res.send(err);
+                res.json(info);
+            });
+        } 
+        else {
+            AnalysedInfo.find({
+                $and: [
+                      {'dataSource': req.params.paramsource},
+                      {'eventDateDate': {$gt: new Date(start)}} //sama dengan date.month bulan ini
+                ]
+            }, function (err, info) {
+                if (err)
+                    res.send(err);
+                res.json(info);
+            });
+        }
     });
 
 
-
-        
-
-// TAMBAHAN
-// ./api/analysedinfo/category/{paramCat}
-// ./api/analysedinfo/threatlevel/{paramLev}
-
+// A3. CATEGORY - FILTER - SOURCE 
 // paramCat = lihat documentCategories.json
 // paramLev = [low, med, high]
 
-router.route('/analysedinfo/category/:paramcat')
+// router.route('/analysedinfo/category/:paramcat')
+//     .get(function(req, res) {
+//         AnalysedInfo.find({ 'categoryMain': req.params.paramcat}, function (err, info) {
+//             if (err)
+//                 res.send(err);
+//             res.json(info);
+//         });
+//     });
+
+router.route('/analysedinfo/category/:paramcat/filter/:paramwaktu/source/:paramsource')
     .get(function(req, res) {
-        AnalysedInfo.find({ 'categoryMain': req.params.paramcat}, function (err, info) {
-            if (err)
-                res.send(err);
-            res.json(info);
-        });
+        var start;
+        var today = new Date();
+        if (req.params.paramwaktu == "lastday"){start = new Date().setDate(today.getDate()-1)};
+        if (req.params.paramwaktu == "lastweek"){start = new Date().setDate(today.getDate()-7)};
+        if (req.params.paramwaktu == "lastmonth"){start = new Date().setDate(today.getDate()-30)};
+        if (req.params.paramwaktu == "lastyear"){start = new Date().setDate(today.getDate()-365)};
+        
+        if (req.params.paramsource == "all"){
+            AnalysedInfo.find({
+                $and: [
+                      {'categoryMain': req.params.paramcat},
+                      {'eventDateDate': {$gt: new Date(start)}} //sama dengan date.month bulan ini
+                ]
+            }, function (err, info) {
+                if (err)
+                    res.send(err);
+                res.json(info);
+            });
+        } 
+        else {
+            AnalysedInfo.find({
+                $and: [
+                      {'categoryMain': req.params.paramcat},
+                      {'dataSource': req.params.paramsource},
+                      {'eventDateDate': {$gt: new Date(start)}} //sama dengan date.month bulan ini
+                ]
+            }, function (err, info) {
+                if (err)
+                    res.send(err);
+                res.json(info);
+            });
+        }
     });
 
-router.route('/analysedinfo/threatlevel/:paramlev')
+
+// A4. THREATLEVEL - FILTER - SOURCE 
+// paramCat = lihat documentCategories.json
+// paramLev = [low, med, high]
+
+// router.route('/analysedinfo/threatlevel/:paramlev')
+//     .get(function(req, res) {
+//         AnalysedInfo.find({ 'threatWarning': req.params.paramlev}, function (err, info) {
+//             if (err)
+//                 res.send(err);
+//             res.json(info);
+//         });
+//     });
+
+router.route('/analysedinfo/threatlevel/:paramlev/filter/:paramwaktu/source/:paramsource')
     .get(function(req, res) {
-        AnalysedInfo.find({ 'threatWarning': req.params.paramlev}, function (err, info) {
-            if (err)
-                res.send(err);
-            res.json(info);
-        });
+        var start;
+        var today = new Date();
+        if (req.params.paramwaktu == "lastday"){start = new Date().setDate(today.getDate()-1)};
+        if (req.params.paramwaktu == "lastweek"){start = new Date().setDate(today.getDate()-7)};
+        if (req.params.paramwaktu == "lastmonth"){start = new Date().setDate(today.getDate()-30)};
+        if (req.params.paramwaktu == "lastyear"){start = new Date().setDate(today.getDate()-365)};
+        
+        if (req.params.paramsource == "all"){
+            AnalysedInfo.find({
+                $and: [
+                      {'threatWarning': req.params.paramlev},
+                      {'eventDateDate': {$gt: new Date(start)}} //sama dengan date.month bulan ini
+                ]
+            }, function (err, info) {
+                if (err)
+                    res.send(err);
+                res.json(info);
+            });
+        } 
+        else {
+            AnalysedInfo.find({
+                $and: [
+                      {'threatWarning': req.params.paramlev},
+                      {'dataSource': req.params.paramsource},
+                      {'eventDateDate': {$gt: new Date(start)}} //sama dengan date.month bulan ini
+                ]
+            }, function (err, info) {
+                if (err)
+                    res.send(err);
+                res.json(info);
+            });
+        }
     });
-
-
 
 
 
