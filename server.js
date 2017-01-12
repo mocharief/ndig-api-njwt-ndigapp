@@ -285,7 +285,7 @@ router.route('/threatsummary')
 //         });
 //     });
 
-// A. mengakses semua analysed info (hasil analisa dias)
+// A1. mengakses semua analysed info (hasil analisa dias)
 router.route('/analysedinfo')
     .get(function(req, res) {
         // var intel = new Intel();      // create a new instance of the Intel model
@@ -297,29 +297,32 @@ router.route('/analysedinfo')
         });
     });
 
-router.route('/analysedinfo/filter/:paramwaktu')
+// A2. dashboard - source 
+router.route('/analysedinfo/filter/:paramwaktu/source/:paramsource')
     .get(function(req, res) {
-        var start;
+        var start, source;
         var today = new Date();
-        if (req.params.paramwaktu == "lastday"){
-            start = new Date().setDate(today.getDate()-1);
-        };
-        if (req.params.paramwaktu == "lastweek"){
-            start = new Date().setDate(today.getDate()-7);
-        };
-        if (req.params.paramwaktu == "lastmonth"){
-            start = new Date().setDate(today.getDate()-30);
-        };
-        if (req.params.paramwaktu == "lastyear"){
-            start = new Date().setDate(today.getDate()-365);
-        };
-        AnalysedInfo.find({ 'eventDateDate': {$gt: new Date(start)}}, function (err, info) {
+        if (req.params.paramwaktu == "lastday"){start = new Date().setDate(today.getDate()-1)};
+        if (req.params.paramwaktu == "lastweek"){start = new Date().setDate(today.getDate()-7)};
+        if (req.params.paramwaktu == "lastmonth"){start = new Date().setDate(today.getDate()-30)};
+        if (req.params.paramwaktu == "lastyear"){start = new Date().setDate(today.getDate()-365)};
+        
+        if (req.params.paramsource == "all"){source = null} else {source = req.params.paramsource};
+        AnalysedInfo.find({
+            $and: [
+                  {'dataSource': req.param.paramsource},
+                  {'eventDateDate': {$gt: new Date(start)}} //sama dengan date.month bulan ini
+            ]
+        }, function (err, info) {
             if (err)
                 res.send(err);
             res.json(info);
         });
     });
 
+
+
+        
 
 // TAMBAHAN
 // ./api/analysedinfo/category/{paramCat}
