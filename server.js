@@ -300,7 +300,7 @@ router.route('/analysedinfo')
 router.route('/analysedinfo/filter/:paramwaktu')
     .get(function(req, res) {
         var start;
-        
+        var today = new Date();
         if (req.params.paramwaktu == "lastday"){
             start = new Date().setDate(today.getDate()-1);
         };
