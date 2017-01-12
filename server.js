@@ -313,7 +313,7 @@ router.route('/analysedinfo/filter/:paramwaktu')
         if (req.params.paramwaktu == "lastyear"){
             start = new Date().setDate(today.getDate()-365);
         };
-        AnalysedInfo.find({ 'eventDateDate': {$gt: start}}, function (err, info) {
+        AnalysedInfo.find({ 'eventDateDate': {$gt: new Date(start)}}, function (err, info) {
             if (err)
                 res.send(err);
             res.json(info);
