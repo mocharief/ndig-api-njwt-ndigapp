@@ -266,17 +266,6 @@ router.route('/rawtwitters')
 // -----------------------ANALYSED INFO-----------------------------
 // -----------------------ANALYSED INFO-----------------------------
 
-// A. mengakses semua analysed info (hasil analisa dias)
-router.route('/analysedinfo')
-    .get(function(req, res) {
-        // var intel = new Intel();      // create a new instance of the Intel model
-        AnalysedInfo.find(function(err, news) {
-            if (err)
-                res.send(err);
-
-            res.json(news);
-        });
-    });
 
 // A. mengakses summari analysed info tiap provinsi
 router.route('/threatsummary')
@@ -295,6 +284,41 @@ router.route('/threatsummary')
 //             res.json({ message: 'Pesan '+pesan+' successfully deleted' });
 //         });
 //     });
+
+// A. mengakses semua analysed info (hasil analisa dias)
+router.route('/analysedinfo')
+    .get(function(req, res) {
+        // var intel = new Intel();      // create a new instance of the Intel model
+        AnalysedInfo.find(function(err, news) {
+            if (err)
+                res.send(err);
+
+            res.json(news);
+        });
+    });
+
+router.route('/analysedinfo/filter/:paramwaktu')
+    .get(function(req, res) {
+        var start;
+        
+        if (req.params.paramwaktu == "lastday"){
+            start = new Date().setDate(today.getDate()-1);
+        };
+        if (req.params.paramwaktu == "lastweek"){
+            start = new Date().setDate(today.getDate()-7);
+        };
+        if (req.params.paramwaktu == "lastmonth"){
+            start = new Date().setDate(today.getDate()-30);
+        };
+        if (req.params.paramwaktu == "lastyear"){
+            start = new Date().setDate(today.getDate()-365);
+        };
+        AnalysedInfo.find({ 'eventDateDate': {$gt: start}}, function (err, info) {
+            if (err)
+                res.send(err);
+            res.json(info);
+        });
+    });
 
 
 // TAMBAHAN
