@@ -42,7 +42,7 @@ var router = express.Router();              // get an instance of the express Ro
 // middleware to use for all requests
 router.use(function(req, res, next) {
     // do logging
-    console.log('Something is happening');
+    console.log('---Something is happening---');
     next(); // make sure we go to the next routes and don't stop here
 });
 
@@ -452,32 +452,34 @@ router.route('/categorysummary')
 // paramwaktu = [lastday, lastweek, lastmonth, lastyear]
 router.route('/piechart/filter/:paramwaktu/source/:paramsource')
     .get(function(req, res) {
-        var start;
-        var today = new Date();
-        if (req.params.paramwaktu == "lastday"){start = new Date().setDate(today.getDate()-1)};
-        if (req.params.paramwaktu == "lastweek"){start = new Date().setDate(today.getDate()-7)};
-        if (req.params.paramwaktu == "lastmonth"){start = new Date().setDate(today.getDate()-30)};
-        if (req.params.paramwaktu == "lastyear"){start = new Date().setDate(today.getDate()-365)};
-        
-        if (req.params.paramsource == "all"){
-            AnalysedInfo.find({'eventDateDate': {$gt: new Date(start)}}, function (err, info) {
-                if (err)
-                    res.send(err);
-                res.json(info);
-            });
-        } 
-        else {
-            AnalysedInfo.find({
-                $and: [
-                      {'dataSource': req.params.paramsource},
-                      {'eventDateDate': {$gt: new Date(start)}} //sama dengan date.month bulan ini
-                ]
-            }, function (err, info) {
-                if (err)
-                    res.send(err);
-                res.json(info);
-            });
-        }
+        console.log("Accessing /piechart with filter " + req.params.paramwaktu + " and source " + req.params.paramsource); 
+        summ.getPiechartSummary(function(summary) {
+            res.json(summary);
+        }, req.params.paramwaktu, req.params.paramsource);
+    });
+
+
+// PIECHART - CATEGORY - FILTER - SOURCE 
+// paramCat = lihat documentCategories.json
+// paramLev = [low, med, high]
+router.route('/piechart/category/:paramcat/filter/:paramwaktu/source/:paramsource')
+    .get(function(req, res) {
+        console.log("Accessing /piechart with category " + req.params.paramcat + " and filter " + req.params.paramwaktu + " and source " + req.params.paramsource); 
+        summ.getPiechartCategorySummary(function(summary) {
+            res.json(summary);
+        }, req.params.paramcat, req.params.paramwaktu, req.params.paramsource);
+    });
+
+
+// PIECHART - THREATLEVEL - FILTER - SOURCE 
+// paramCat = lihat documentCategories.json
+// paramLev = [low, med, high]
+router.route('/piechart/threatlevel/:paramlev/filter/:paramwaktu/source/:paramsource')
+    .get(function(req, res) {
+        console.log("Accessing /piechart with threat level " + req.params.paramlev + " and filter " + req.params.paramwaktu + " and source " + req.params.paramsource); 
+        summ.getPiechartThreatSummary(function(summary) {
+            res.json(summary);
+        }, req.params.paramlev, req.params.paramwaktu, req.params.paramsource);
     });
 
 

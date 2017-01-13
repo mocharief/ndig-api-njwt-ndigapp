@@ -1,6 +1,6 @@
 // analyses.js
 
-module.exports = function(AnalysedNews){
+module.exports = function(AnalysedInfo){
 	var async = require('async');
 	var summArr = new Array();
 
@@ -9,7 +9,7 @@ module.exports = function(AnalysedNews){
 	getProvinceSummary = function (fn){
 		summArr.length = 0;
 		// Ambil list kota
-		AnalysedNews.distinct("eventDaerahTk1", function(err, provinces) {
+		AnalysedInfo.distinct("eventDaerahTk1", function(err, provinces) {
 			if (err)
 				res.send(err);
 
@@ -26,14 +26,14 @@ module.exports = function(AnalysedNews){
 			async.series([
 				function(callback) {
 					// Ambil jumlah low threats
-					AnalysedNews.find({$and:[{"eventDaerahTk1" : province},{"threatWarning": "low"}]}, function(err, lowthreats) {
+					AnalysedInfo.find({$and:[{"eventDaerahTk1" : province},{"threatWarning": "low"}]}, function(err, lowthreats) {
 						if (err)
 							res.send(err);
 
 						// callback(null, lowthreats.length);
 
 						// ambil summari kategori
-						AnalysedNews.distinct("categoryMain", {$and: [{"eventDaerahTk1" : province}, {"threatWarning":"low"}]}, function(err, catSumm) {
+						AnalysedInfo.distinct("categoryMain", {$and: [{"eventDaerahTk1" : province}, {"threatWarning":"low"}]}, function(err, catSumm) {
 							if (err)
 								res.send(err);
 
@@ -43,14 +43,14 @@ module.exports = function(AnalysedNews){
 				},
 				function(callback) {
 					// Ambil jumlah medium threats
-					AnalysedNews.find({$and:[{"eventDaerahTk1" : province},{"threatWarning": "medium"}]}, function(err, medthreats) {
+					AnalysedInfo.find({$and:[{"eventDaerahTk1" : province},{"threatWarning": "medium"}]}, function(err, medthreats) {
 						if (err)
 							res.send(err);
 
 						// callback(null, medthreats.length);
 
 						// ambil summari kategori
-						AnalysedNews.distinct("categoryMain", {$and: [{"eventDaerahTk1" : province}, {"threatWarning":"medium"}]}, function(err, catSumm) {
+						AnalysedInfo.distinct("categoryMain", {$and: [{"eventDaerahTk1" : province}, {"threatWarning":"medium"}]}, function(err, catSumm) {
 							if (err)
 								res.send(err);
 
@@ -60,14 +60,14 @@ module.exports = function(AnalysedNews){
 				},
 				function(callback) {
 					// Ambil jumlah high threats
-					AnalysedNews.find({$and:[{"eventDaerahTk1" : province},{"threatWarning": "high"}]}, function(err, highthreats) {
+					AnalysedInfo.find({$and:[{"eventDaerahTk1" : province},{"threatWarning": "high"}]}, function(err, highthreats) {
 						if (err)
 							res.send(err);
 
 						// callback(null, highthreats.length);
 
 						// ambil summari kategori
-						AnalysedNews.distinct("categoryMain", {$and: [{"eventDaerahTk1" : province}, {"threatWarning":"high"}]}, function(err, catSumm) {
+						AnalysedInfo.distinct("categoryMain", {$and: [{"eventDaerahTk1" : province}, {"threatWarning":"high"}]}, function(err, catSumm) {
 							if (err)
 								res.send(err);
 
@@ -82,7 +82,7 @@ module.exports = function(AnalysedNews){
 				if (err) fn(err);
 
 				// push the array
-				AnalysedNews
+				AnalysedInfo
 				.where('eventDaerahTk1', province)
 				.select('eventLat eventLon') 		// hanya mengambil field eventLat dan eventLon
 				.limit(1)
@@ -113,10 +113,11 @@ module.exports = function(AnalysedNews){
 	}
 
 	getCategorySummary = function (fn){
+		console.log("getCategorySummary");
 		summArr.length = 0;
 
 		// Ambil list kota
-		AnalysedNews.distinct("eventDaerahTk1", function(err, provinces) {
+		AnalysedInfo.distinct("eventDaerahTk1", function(err, provinces) {
 			if (err)
 				res.send(err);
 
@@ -133,9 +134,9 @@ module.exports = function(AnalysedNews){
 
 			// iterate the array of kategori
 			async.each(kategori, function(kat, katcallback) {
-			    // Perform operation on file here.
-			    // console.log('Processing category ' + kat);
-			    AnalysedNews.find({$and:[{"eventDaerahTk1" : province},{"categoryMain": kat.main.name}]}, function(err, data) {
+				// Perform operation on file here.
+				// console.log('Processing category ' + kat);
+				AnalysedInfo.find({$and:[{"eventDaerahTk1" : province},{"categoryMain": kat.main.name}]}, function(err, data) {
 					if (err)
 						res.send(err);
 
@@ -149,14 +150,14 @@ module.exports = function(AnalysedNews){
 				});
 			}, 
 			function(err) {
-			    // if any of the file processing produced an error, err would equal that error
-			    if( err ) {
-			      // One of the iterations produced an error.
-			      // All processing will now stop.
-			      console.log('Something wrong when processing category query');
-			    }
+				// if any of the file processing produced an error, err would equal that error
+				if( err ) {
+				  // One of the iterations produced an error.
+				  // All processing will now stop.
+				  console.log('Something wrong when processing category query');
+				}
 
-			    AnalysedNews
+				AnalysedInfo
 				.where('eventDaerahTk1', province)
 				.select('eventLat eventLon') 		// hanya mengambil field eventLat dan eventLon
 				.limit(1)
@@ -182,6 +183,260 @@ module.exports = function(AnalysedNews){
 		});
 	}
 
+	getPiechartSummary = function (fn, paramwaktu, paramsource){
+		console.log("getPiechartSummary " + paramwaktu + " " + paramsource);
+		summArr.length = 0;
+
+		// Ambil list kota
+		AnalysedInfo.distinct("categoryMain", function(err, categories) {
+			if (err)
+				res.send(err);
+
+			getPiechartData(categories, fn, paramwaktu, paramsource);
+		});
+	}
+
+	getPiechartData = function(categories, fn, paramwaktu, paramsource)
+	{
+		async.each(categories, function(category , eachcallback)
+		{
+			var newSumm = new Object();
+
+			var start;
+			var today = new Date();
+			if (paramwaktu == "lastday"){start = new Date().setDate(today.getDate()-1)};
+			if (paramwaktu == "lastweek"){start = new Date().setDate(today.getDate()-7)};
+			if (paramwaktu == "lastmonth"){start = new Date().setDate(today.getDate()-30)};
+			if (paramwaktu == "lastyear"){start = new Date().setDate(today.getDate()-365)};
+			
+			if (paramsource == "all"){
+				AnalysedInfo.find({
+					$and: [
+						{'categoryMain' : category},
+						{'eventDateDate': {$gt: new Date(start)}}
+					]
+				}, function (err, info) {
+					if (err)
+						fn(err);
+
+					newSumm.category = category;
+					newSumm.amount = info.length;
+					summArr.push(newSumm);
+
+					eachcallback();
+				});
+			} 
+			else {
+				AnalysedInfo.find({
+					$and: [
+						{'categoryMain' : category},
+						{'dataSource': paramsource},
+						{'eventDateDate': {$gt: new Date(start)}} //sama dengan date.month bulan ini
+					]
+				}, function (err, info) {
+					if (err)
+						fn(err);
+
+					newSumm.category = category;
+					newSumm.amount = info.length;
+					summArr.push(newSumm);
+
+					eachcallback();
+				});
+			}
+		}, 
+		function(err){
+			if (err)
+				fn(err);
+			else
+				fn(summArr);
+		});
+	}
+
+	getPiechartCategorySummary = function (fn, paramCat, paramwaktu, paramsource){
+		console.log("getPiechartCategorySummary " + paramCat + " " + paramwaktu + " " + paramsource);
+		summArr.length = 0;
+
+		// Ambil list subcategory dari maincategory tertentu
+		AnalysedInfo.distinct("categorySub1", {"categoryMain" : paramCat}, function(err, subcategories) {
+			if (err)
+				res.send(err);
+
+			getPiechartCategoryData(subcategories, fn, paramCat, paramwaktu, paramsource);
+		});
+	}
+
+	getPiechartCategoryData = function(subcategories, fn, paramCat, paramwaktu, paramsource)
+	{
+		var start;
+		var today = new Date();
+		if (paramwaktu == "lastday"){start = new Date().setDate(today.getDate()-1)};
+		if (paramwaktu == "lastweek"){start = new Date().setDate(today.getDate()-7)};
+		if (paramwaktu == "lastmonth"){start = new Date().setDate(today.getDate()-30)};
+		if (paramwaktu == "lastyear"){start = new Date().setDate(today.getDate()-365)};
+
+		if (subcategories.length == 0) {
+			var newSumm = new Object();
+			// just get the categoryMain data
+			if (paramsource == "all"){
+				AnalysedInfo.find({
+					$and: [
+						{'categoryMain' : paramCat},
+						{'eventDateDate': {$gt: new Date(start)}}
+					]
+				}, function (err, info) {
+					if (err)
+						fn(err);
+
+					newSumm.category = paramCat;
+					newSumm.amount = info.length;
+					summArr.push(newSumm);
+				});
+			} 
+			else {
+				AnalysedInfo.find({
+					$and: [
+						{'categoryMain' : paramCat},
+						{'dataSource': paramsource},
+						{'eventDateDate': {$gt: new Date(start)}} //sama dengan date.month bulan ini
+					]
+				}, function (err, info) {
+					if (err)
+						fn(err);
+
+					newSumm.category = paramCat;
+					newSumm.amount = info.length;
+					summArr.push(newSumm);
+				});
+			}
+
+			fn(summArr);
+
+		} else if (subcategories.length > 0) {
+
+			async.each(subcategories, function(subcategory , eachcallback)
+			{
+				var newSumm = new Object();
+				
+				if (paramsource == "all"){
+					AnalysedInfo.find({
+						$and: [
+							{'categoryMain' : paramCat},
+							{'categorySub1' : subcategory},
+							{'eventDateDate': {$gt: new Date(start)}}
+						]
+					}, function (err, info) {
+						if (err)
+							fn(err);
+
+						newSumm.category = subcategory;
+						newSumm.amount = info.length;
+						summArr.push(newSumm);
+
+						eachcallback();
+					});
+				} 
+				else {
+					AnalysedInfo.find({
+						$and: [
+							{'categoryMain' : paramCat},
+							{'categorySub1' : subcategory},
+							{'dataSource': paramsource},
+							{'eventDateDate': {$gt: new Date(start)}} //sama dengan date.month bulan ini
+						]
+					}, function (err, info) {
+						if (err)
+							fn(err);
+
+						newSumm.category = subcategory;
+						newSumm.amount = info.length;
+						summArr.push(newSumm);
+
+						eachcallback();
+					});
+				}
+			}, 
+			function(err){
+				if (err)
+					fn(err);
+				else
+					fn(summArr);
+			});
+		}
+	}
+
+	getPiechartThreatSummary = function (fn, paramLev, paramwaktu, paramsource){
+		console.log("getPiechartThreatSummary " + paramLev + " " + paramwaktu + " " + paramsource);
+		summArr.length = 0;
+
+		// Ambil list kota
+		AnalysedInfo.distinct("categoryMain", function(err, categories) {
+			if (err)
+				res.send(err);
+
+			getPiechartThreatData(categories, fn, paramLev, paramwaktu, paramsource);
+		});
+	}
+
+	getPiechartThreatData = function(categories, fn, paramLev, paramwaktu, paramsource)
+	{
+		async.each(categories, function(category , eachcallback)
+		{
+			var newSumm = new Object();
+
+			var start;
+			var today = new Date();
+			if (paramwaktu == "lastday"){start = new Date().setDate(today.getDate()-1)};
+			if (paramwaktu == "lastweek"){start = new Date().setDate(today.getDate()-7)};
+			if (paramwaktu == "lastmonth"){start = new Date().setDate(today.getDate()-30)};
+			if (paramwaktu == "lastyear"){start = new Date().setDate(today.getDate()-365)};
+			
+			if (paramsource == "all"){
+				AnalysedInfo.find({
+					$and: [
+						{'categoryMain' : category},
+						{'threatWarning' : paramLev},
+						{'eventDateDate': {$gt: new Date(start)}}
+					]
+				}, function (err, info) {
+					if (err)
+						fn(err);
+
+					newSumm.category = category;
+					newSumm.amount = info.length;
+					summArr.push(newSumm);
+
+					eachcallback();
+				});
+			} 
+			else {
+				AnalysedInfo.find({
+					$and: [
+						{'categoryMain' : category},
+						{'threatWarning' : paramLev},
+						{'dataSource': paramsource},
+						{'eventDateDate': {$gt: new Date(start)}} //sama dengan date.month bulan ini
+					]
+				}, function (err, info) {
+					if (err)
+						fn(err);
+
+					newSumm.category = category;
+					newSumm.amount = info.length;
+					summArr.push(newSumm);
+
+					eachcallback();
+				});
+			}
+		}, 
+		function(err){
+			if (err)
+				fn(err);
+			else
+				fn(summArr);
+		});
+	}
+
 	/*make some functions as public */
 	return {
 		getProvinceSummary : function(fn){
@@ -189,6 +444,15 @@ module.exports = function(AnalysedNews){
 		},
 		getCategorySummary : function(fn){
 			getCategorySummary(fn);
+		},
+		getPiechartSummary : function(fn, paramwaktu, paramsource){
+			getPiechartSummary(fn, paramwaktu, paramsource);
+		},
+		getPiechartCategorySummary : function(fn, paramCat, paramwaktu, paramsource){
+			getPiechartCategorySummary(fn, paramCat, paramwaktu, paramsource);
+		},
+		getPiechartThreatSummary : function(fn, paramLev, paramwaktu, paramsource){
+			getPiechartThreatSummary(fn, paramLev, paramwaktu, paramsource);
 		}
 	}
 }
