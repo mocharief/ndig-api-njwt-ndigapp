@@ -10,13 +10,13 @@ var Pesan       = require('./app/models/pesan');
 var Twitter     = require('./app/models/twitter');
 
 var AnalysedInfo    = require('./app/models/analysedinfo');
-var analyzing = require('./analyses.js')(AnalysedInfo);
+var summ = require('./summary.js')(AnalysedInfo);
 // var News    = require('./app/models/news');
 // var Webpage    = require('./app/models/crawl_webpage');
 
 var mongoose    = require('mongoose');
 // mongoose.connect('mongodb://localhost:27017/pesanIntelDB'); // connect to our database
-mongoose.connect('mongodb://localhost:27017/dias'); // connect to our database
+mongoose.connect('mongodb://192.168.1.241:27017/dias'); // connect to our database
 // mongoose.connect('mongodb://192.168.1.8:27017/skmchatbot_message'); // connect to our database
 
 
@@ -42,7 +42,7 @@ var router = express.Router();              // get an instance of the express Ro
 // middleware to use for all requests
 router.use(function(req, res, next) {
     // do logging
-    console.log('Something is happening.');
+    console.log('Something is happening');
     next(); // make sure we go to the next routes and don't stop here
 });
 
@@ -267,24 +267,6 @@ router.route('/rawtwitters')
 // -----------------------ANALYSED INFO-----------------------------
 
 
-// A. mengakses summari analysed info tiap provinsi
-router.route('/threatsummary')
-    .get(function(req, res) {
-        analyzing.getProvinceSummary(function(summary) {
-            res.json(summary);
-        });
-    });
-
-
-// router.route('/analysedinfo/:source/:threatlevel/:place')
-//     .get(function(req, res) {
-//         Pesan.remove({_id: req.params.pesan_id}, function(err, pesan) {
-//             if (err)
-//                 res.send(err);
-//             res.json({ message: 'Pesan '+pesan+' successfully deleted' });
-//         });
-//     });
-
 // A1. mengakses semua analysed info (hasil analisa dias)
 router.route('/analysedinfo')
     .get(function(req, res) {
@@ -432,6 +414,71 @@ router.route('/analysedinfo/threatlevel/:paramlev/filter/:paramwaktu/source/:par
     });
 
 
+
+// -----------------------SUMMARY-----------------------------
+// -----------------------SUMMARY-----------------------------
+// -----------------------SUMMARY-----------------------------
+// -----------------------SUMMARY-----------------------------
+
+
+// mengakses summari analysed info tiap provinsi
+router.route('/threatsummary')
+    .get(function(req, res) {
+        console.log("Accessing /threatsummary");
+        summ.getProvinceSummary(function(summary) {
+            res.json(summary);
+        });
+    });
+
+// mengakses summari category dari analysed info tiap provinsi
+router.route('/categorysummary')
+    .get(function(req, res) {
+        console.log("Accessing /categorysummary");
+        summ.getCategorySummary(function(summary) {
+            res.json(summary);
+        });
+    });
+
+
+
+// -----------------------PIECHART-----------------------------
+// -----------------------PIECHART-----------------------------
+// -----------------------PIECHART-----------------------------
+// -----------------------PIECHART-----------------------------
+
+
+// PIECHART - FILTER - SOURCE 
+// paramsource = [all, news, twitter, intel]
+// paramwaktu = [lastday, lastweek, lastmonth, lastyear]
+router.route('/piechart/filter/:paramwaktu/source/:paramsource')
+    .get(function(req, res) {
+        var start;
+        var today = new Date();
+        if (req.params.paramwaktu == "lastday"){start = new Date().setDate(today.getDate()-1)};
+        if (req.params.paramwaktu == "lastweek"){start = new Date().setDate(today.getDate()-7)};
+        if (req.params.paramwaktu == "lastmonth"){start = new Date().setDate(today.getDate()-30)};
+        if (req.params.paramwaktu == "lastyear"){start = new Date().setDate(today.getDate()-365)};
+        
+        if (req.params.paramsource == "all"){
+            AnalysedInfo.find({'eventDateDate': {$gt: new Date(start)}}, function (err, info) {
+                if (err)
+                    res.send(err);
+                res.json(info);
+            });
+        } 
+        else {
+            AnalysedInfo.find({
+                $and: [
+                      {'dataSource': req.params.paramsource},
+                      {'eventDateDate': {$gt: new Date(start)}} //sama dengan date.month bulan ini
+                ]
+            }, function (err, info) {
+                if (err)
+                    res.send(err);
+                res.json(info);
+            });
+        }
+    });
 
 
 
