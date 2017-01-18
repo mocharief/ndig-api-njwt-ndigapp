@@ -7,7 +7,7 @@ var PesanSchema  = new Schema({
     dari: String,
     type: String,
     date: Date,
-    pesan: String
+    laporan: String
 }, 
 // { collection : 'news_analysed' });
 { collection : 'pesanintel_raw' });
