@@ -448,8 +448,8 @@ router.route('/categorysummary')
 
 
 // PIECHART - FILTER - SOURCE 
-// paramsource = [all, news, twitter, intel]
 // paramwaktu = [lastday, lastweek, lastmonth, lastyear]
+// paramsource = [all, news, twitter, intel]
 router.route('/piechart/filter/:paramwaktu/source/:paramsource')
     .get(function(req, res) {
         console.log("Accessing /piechart with filter " + req.params.paramwaktu + " and source " + req.params.paramsource); 
@@ -461,7 +461,7 @@ router.route('/piechart/filter/:paramwaktu/source/:paramsource')
 
 // PIECHART - CATEGORY - FILTER - SOURCE 
 // paramCat = lihat documentCategories.json
-// paramLev = [low, med, high]
+// paramsource = [all, news, twitter, intel]
 router.route('/piechart/category/:paramcat/filter/:paramwaktu/source/:paramsource')
     .get(function(req, res) {
         console.log("Accessing /piechart with category " + req.params.paramcat + " and filter " + req.params.paramwaktu + " and source " + req.params.paramsource); 
@@ -472,12 +472,57 @@ router.route('/piechart/category/:paramcat/filter/:paramwaktu/source/:paramsourc
 
 
 // PIECHART - THREATLEVEL - FILTER - SOURCE 
-// paramCat = lihat documentCategories.json
 // paramLev = [low, med, high]
+// paramwaktu = [lastday, lastweek, lastmonth, lastyear]
+// paramsource = [all, news, twitter, intel]
 router.route('/piechart/threatlevel/:paramlev/filter/:paramwaktu/source/:paramsource')
     .get(function(req, res) {
         console.log("Accessing /piechart with threat level " + req.params.paramlev + " and filter " + req.params.paramwaktu + " and source " + req.params.paramsource); 
         summ.getPiechartThreatSummary(function(summary) {
+            res.json(summary);
+        }, req.params.paramlev, req.params.paramwaktu, req.params.paramsource);
+    });
+
+
+
+// -----------------------LINECHART-----------------------------
+// -----------------------LINECHART-----------------------------
+// -----------------------LINECHART-----------------------------
+// -----------------------LINECHART-----------------------------
+
+
+// LINECHART - FILTER - SOURCE 
+// paramsource = [all, news, twitter, intel]
+// paramwaktu = [lastday, lastweek, lastmonth, lastyear]
+router.route('/linechart/filter/:paramwaktu/source/:paramsource')
+    .get(function(req, res) {
+        console.log("Accessing /linechart with filter " + req.params.paramwaktu + " and source " + req.params.paramsource); 
+        summ.getLinechartSummary(function(summary) {
+            res.json(summary);
+        }, req.params.paramwaktu, req.params.paramsource);
+    });
+
+
+// LINECHART - CATEGORY - FILTER - SOURCE 
+// paramCat = lihat documentCategories.json
+// paramsource = [all, news, twitter, intel]
+router.route('/linechart/category/:paramcat/filter/:paramwaktu/source/:paramsource')
+    .get(function(req, res) {
+        console.log("Accessing /linechart with category " + req.params.paramcat + " and filter " + req.params.paramwaktu + " and source " + req.params.paramsource); 
+        summ.getLinechartCategorySummary(function(summary) {
+            res.json(summary);
+        }, req.params.paramcat, req.params.paramwaktu, req.params.paramsource);
+    });
+
+
+// LINECHART - THREATLEVEL - FILTER - SOURCE 
+// paramLev = [low, med, high]
+// paramwaktu = [lastday, lastweek, lastmonth, lastyear]
+// paramsource = [all, news, twitter, intel]
+router.route('/linechart/threatlevel/:paramlev/filter/:paramwaktu/source/:paramsource')
+    .get(function(req, res) {
+        console.log("Accessing /linechart with threat level " + req.params.paramlev + " and filter " + req.params.paramwaktu + " and source " + req.params.paramsource); 
+        summ.getLinechartThreatSummary(function(summary) {
             res.json(summary);
         }, req.params.paramlev, req.params.paramwaktu, req.params.paramsource);
     });

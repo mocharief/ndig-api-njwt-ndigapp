@@ -2,6 +2,7 @@
 
 module.exports = function(AnalysedInfo){
 	var async = require('async');
+	var dateFormat = require('dateformat');
 	var summArr = new Array();
 
 	var kategori = require("./data/documentCategories.json");
@@ -437,6 +438,207 @@ module.exports = function(AnalysedInfo){
 		});
 	}
 
+	getLinechartSummary = function (fn, paramwaktu, paramsource){
+		console.log("getLinechartSummary " + paramwaktu + " " + paramsource);
+
+		var nTimes;
+		if (paramwaktu == "lastday") nTimes = 1;
+		else if (paramwaktu == "lastweek") nTimes = 7;
+		else if (paramwaktu == "lastmonth") nTimes = 30;
+		else if (paramwaktu == "lastyear") nTimes = 365;
+
+		async.times(nTimes, getLinechartData, function (err, resultArray) {
+			if (err) fn(err);
+
+			console.log("getLinechartData result ", resultArray);
+			fn(resultArray);
+		});
+
+		function getLinechartData (iter, callback1)
+		{
+			var today = new Date();
+			var theDate = new Date().setDate(today.getDate()-iter);
+			var theDateBefore = new Date().setDate(today.getDate()-iter-1);
+
+			var threatLevels = ["low","high","medium"];
+			async.map(threatLevels, getThreatPerDay, function (err, result) {
+				if (err) console.log('Error: ' + err);
+				
+				// console.log('Finished: ', result);
+				var linechartData = new Object();
+				linechartData.date = dateFormat(theDateBefore, "yyyy-mm-dd");
+				for (var i = 0; i < result.length; i++) {
+					linechartData[result[i].desc] = result[i].n;
+				}
+				callback1(null, linechartData);
+			});
+
+			function getThreatPerDay(threat, callback2) {
+				if (paramsource == "all") 
+				{
+					AnalysedInfo.find({$and : [
+							{"threatWarning": threat},
+							{'eventDateDate': {$gt: new Date(theDateBefore)}},
+							{'eventDateDate': {$lte: new Date(theDate)}}
+						]
+					}, function(err, doc) {
+						if (err) console.log(err);
+
+						callback2(null, {"desc" : threat, "n": doc.length});
+					});
+				} else {
+					AnalysedInfo.find({$and : [
+							{"threatWarning": threat},
+                      		{'dataSource': paramsource},
+							{'eventDateDate': {$gt: new Date(theDateBefore)}},
+							{'eventDateDate': {$lte: new Date(theDate)}}
+						]
+					}, function(err, doc) {
+						if (err) console.log(err);
+
+						callback2(null, {"desc" : threat, "n": doc.length});
+					});
+				}
+			}
+		}
+	}
+
+	getLinechartCategorySummary = function (fn, paramCat, paramwaktu, paramsource){
+		console.log("getLinechartCategorySummary " + paramCat + " " + paramwaktu + " " + paramsource);
+
+		var nTimes;
+		if (paramwaktu == "lastday") nTimes = 1;
+		else if (paramwaktu == "lastweek") nTimes = 7;
+		else if (paramwaktu == "lastmonth") nTimes = 30;
+		else if (paramwaktu == "lastyear") nTimes = 365;
+
+		async.times(nTimes, getLinechartData, function (err, resultArray) {
+			if (err) fn(err);
+
+			console.log("getLinechartData result ", resultArray);
+			fn(resultArray);
+		});
+
+		function getLinechartData (iter, callback1)
+		{
+			var today = new Date();
+			var theDate = new Date().setDate(today.getDate()-iter);
+			var theDateBefore = new Date().setDate(today.getDate()-iter-1);
+
+			var threatLevels = ["low","high","medium"];
+			async.map(threatLevels, getThreatPerDay, function (err, result) {
+				if (err) console.log('Error: ' + err);
+				
+				// console.log('Finished: ', result);
+				var linechartData = new Object();
+				linechartData.date = dateFormat(theDateBefore, "yyyy-mm-dd");
+				for (var i = 0; i < result.length; i++) {
+					linechartData[result[i].desc] = result[i].n;
+				}
+				callback1(null, linechartData);
+			});
+
+			function getThreatPerDay(threat, callback2) {
+				if (paramsource == "all") 
+				{
+					AnalysedInfo.find({$and : [
+							{"threatWarning": threat},
+							{'eventDateDate': {$gt: new Date(theDateBefore)}},
+							{'eventDateDate': {$lte: new Date(theDate)}},
+							{'categoryMain' : paramCat}
+						]
+					}, function(err, doc) {
+						if (err) console.log(err);
+
+						callback2(null, {"desc" : threat, "n": doc.length});
+					});
+				} else {
+					AnalysedInfo.find({$and : [
+							{"threatWarning": threat},
+                      		{'dataSource': paramsource},
+							{'eventDateDate': {$gt: new Date(theDateBefore)}},
+							{'eventDateDate': {$lte: new Date(theDate)}},
+							{'categoryMain' : paramCat}
+						]
+					}, function(err, doc) {
+						if (err) console.log(err);
+
+						callback2(null, {"desc" : threat, "n": doc.length});
+					});
+				}
+			}
+		}
+	}
+
+	getLinechartThreatSummary = function (fn, paramLev, paramwaktu, paramsource){
+		console.log("getLinechartThreatSummary " + paramLev + " " + paramwaktu + " " + paramsource);
+
+		var nTimes;
+		if (paramwaktu == "lastday") nTimes = 1;
+		else if (paramwaktu == "lastweek") nTimes = 7;
+		else if (paramwaktu == "lastmonth") nTimes = 30;
+		else if (paramwaktu == "lastyear") nTimes = 365;
+
+		async.times(nTimes, getLinechartData, function (err, resultArray) {
+			if (err) fn(err);
+
+			console.log("getLinechartData result ", resultArray);
+			fn(resultArray);
+		});
+
+		function getLinechartData (iter, callback1)
+		{
+			var today = new Date();
+			var theDate = new Date().setDate(today.getDate()-iter);
+			var theDateBefore = new Date().setDate(today.getDate()-iter-1);
+
+			var threatLevels = ["low","high","medium"];
+			async.map(threatLevels, getThreatPerDay, function (err, result) {
+				if (err) console.log('Error: ' + err);
+				
+				// console.log('Finished: ', result);
+				var linechartData = new Object();
+				linechartData.date = dateFormat(theDateBefore, "yyyy-mm-dd");
+				for (var i = 0; i < result.length; i++) {
+					linechartData[result[i].desc] = result[i].n;
+				}
+				callback1(null, linechartData);
+			});
+
+			function getThreatPerDay(threat, callback2) {
+				if (threat == paramLev) {
+					if (paramsource == "all") 
+					{
+						AnalysedInfo.find({$and : [
+								{"threatWarning": threat},
+								{'eventDateDate': {$gt: new Date(theDateBefore)}},
+								{'eventDateDate': {$lte: new Date(theDate)}}
+							]
+						}, function(err, doc) {
+							if (err) console.log(err);
+
+							callback2(null, {"desc" : threat, "n": doc.length});
+						});
+					} else {
+						AnalysedInfo.find({$and : [
+								{"threatWarning": threat},
+	                      		{'dataSource': paramsource},
+								{'eventDateDate': {$gt: new Date(theDateBefore)}},
+								{'eventDateDate': {$lte: new Date(theDate)}}
+							]
+						}, function(err, doc) {
+							if (err) console.log(err);
+
+							callback2(null, {"desc" : threat, "n": doc.length});
+						});
+					}
+				} else {
+					callback2(null, {"desc" : threat, "n": 0});
+				}
+			}
+		}
+	}
+
 	/*make some functions as public */
 	return {
 		getProvinceSummary : function(fn){
@@ -453,6 +655,15 @@ module.exports = function(AnalysedInfo){
 		},
 		getPiechartThreatSummary : function(fn, paramLev, paramwaktu, paramsource){
 			getPiechartThreatSummary(fn, paramLev, paramwaktu, paramsource);
+		},
+		getLinechartSummary : function(fn, paramwaktu, paramsource){
+			getLinechartSummary(fn, paramwaktu, paramsource);
+		},
+		getLinechartCategorySummary : function(fn, paramCat, paramwaktu, paramsource){
+			getLinechartCategorySummary(fn, paramCat, paramwaktu, paramsource);
+		},
+		getLinechartThreatSummary : function(fn, paramLev, paramwaktu, paramsource){
+			getLinechartThreatSummary(fn, paramLev, paramwaktu, paramsource);
 		}
 	}
 }
