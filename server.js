@@ -68,6 +68,7 @@ router.route('/rawpesans')
         pesan.dari      = req.body.dari;  // ngisi param
         pesan.type      = req.body.type;
         pesan.date      = req.body.date;
+        pesan.category  = req.body.category;
         pesan.laporan   = req.body.pesan;
 
         // save the pesan and check for errors
