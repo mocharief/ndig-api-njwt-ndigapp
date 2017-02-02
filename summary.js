@@ -457,8 +457,16 @@ module.exports = function(AnalysedInfo){
 		function getLinechartData (iter, callback1)
 		{
 			var today = new Date();
-			var theDate = new Date().setDate(today.getDate()-iter);
-			var theDateBefore = new Date().setDate(today.getDate()-iter-1);
+			var theDate = new Date(new Date().setDate(today.getDate()-iter));
+			var theDateObj = new Object();
+			theDateObj.year = 1900 + theDate.getYear();
+			theDateObj.month = theDate.getMonth();
+			theDateObj.date = theDate.getDate();
+			var theDateBefore = new Date(new Date().setDate(today.getDate()-iter-1));
+			var theDateBeforeObj = new Object();
+			theDateBeforeObj.year = 1900 + theDateBefore.getYear();
+			theDateBeforeObj.month = theDateBefore.getMonth();
+			theDateBeforeObj.date = theDateBefore.getDate();
 
 			var threatLevels = ["low","high","medium"];
 			async.map(threatLevels, getThreatPerDay, function (err, result) {
@@ -478,8 +486,8 @@ module.exports = function(AnalysedInfo){
 				{
 					AnalysedInfo.find({$and : [
 							{"threatWarning": threat},
-							{'eventDateDate': {$gt: new Date(theDateBefore)}},
-							{'eventDateDate': {$lte: new Date(theDate)}}
+							{'eventDateDate': {$gte: new Date(theDateBeforeObj.year, theDateBeforeObj.month, theDateBeforeObj.date)}},
+							{'eventDateDate': {$lt: new Date(theDateObj.year, theDateObj.month, theDateObj.date)}}
 						]
 					}, function(err, doc) {
 						if (err) console.log(err);
@@ -490,8 +498,8 @@ module.exports = function(AnalysedInfo){
 					AnalysedInfo.find({$and : [
 							{"threatWarning": threat},
                       		{'dataSource': paramsource},
-							{'eventDateDate': {$gt: new Date(theDateBefore)}},
-							{'eventDateDate': {$lte: new Date(theDate)}}
+							{'eventDateDate': {$gte: new Date(theDateBeforeObj.year, theDateBeforeObj.month, theDateBeforeObj.date)}},
+							{'eventDateDate': {$lt: new Date(theDateObj.year, theDateObj.month, theDateObj.date)}}
 						]
 					}, function(err, doc) {
 						if (err) console.log(err);
@@ -515,15 +523,23 @@ module.exports = function(AnalysedInfo){
 		async.times(nTimes, getLinechartData, function (err, resultArray) {
 			if (err) fn(err);
 
-			console.log("getLinechartData result ", resultArray);
+			// console.log("getLinechartData result ", resultArray);
 			fn(resultArray);
 		});
 
 		function getLinechartData (iter, callback1)
 		{
 			var today = new Date();
-			var theDate = new Date().setDate(today.getDate()-iter);
-			var theDateBefore = new Date().setDate(today.getDate()-iter-1);
+			var theDate = new Date(new Date().setDate(today.getDate()-iter));
+			var theDateObj = new Object();
+			theDateObj.year = 1900 + theDate.getYear();
+			theDateObj.month = theDate.getMonth();
+			theDateObj.date = theDate.getDate();
+			var theDateBefore = new Date(new Date().setDate(today.getDate()-iter-1));
+			var theDateBeforeObj = new Object();
+			theDateBeforeObj.year = 1900 + theDateBefore.getYear();
+			theDateBeforeObj.month = theDateBefore.getMonth();
+			theDateBeforeObj.date = theDateBefore.getDate();
 
 			var threatLevels = ["low","high","medium"];
 			async.map(threatLevels, getThreatPerDay, function (err, result) {
@@ -543,8 +559,8 @@ module.exports = function(AnalysedInfo){
 				{
 					AnalysedInfo.find({$and : [
 							{"threatWarning": threat},
-							{'eventDateDate': {$gt: new Date(theDateBefore)}},
-							{'eventDateDate': {$lte: new Date(theDate)}},
+							{'eventDateDate': {$gte: new Date(theDateBeforeObj.year, theDateBeforeObj.month, theDateBeforeObj.date)}},
+							{'eventDateDate': {$lt: new Date(theDateObj.year, theDateObj.month, theDateObj.date)}},
 							{'categoryMain' : paramCat}
 						]
 					}, function(err, doc) {
@@ -556,8 +572,8 @@ module.exports = function(AnalysedInfo){
 					AnalysedInfo.find({$and : [
 							{"threatWarning": threat},
                       		{'dataSource': paramsource},
-							{'eventDateDate': {$gt: new Date(theDateBefore)}},
-							{'eventDateDate': {$lte: new Date(theDate)}},
+							{'eventDateDate': {$gte: new Date(theDateBeforeObj.year, theDateBeforeObj.month, theDateBeforeObj.date)}},
+							{'eventDateDate': {$lt: new Date(theDateObj.year, theDateObj.month, theDateObj.date)}},
 							{'categoryMain' : paramCat}
 						]
 					}, function(err, doc) {
@@ -589,8 +605,16 @@ module.exports = function(AnalysedInfo){
 		function getLinechartData (iter, callback1)
 		{
 			var today = new Date();
-			var theDate = new Date().setDate(today.getDate()-iter);
-			var theDateBefore = new Date().setDate(today.getDate()-iter-1);
+			var theDate = new Date(new Date().setDate(today.getDate()-iter));
+			var theDateObj = new Object();
+			theDateObj.year = 1900 + theDate.getYear();
+			theDateObj.month = theDate.getMonth();
+			theDateObj.date = theDate.getDate();
+			var theDateBefore = new Date(new Date().setDate(today.getDate()-iter-1));
+			var theDateBeforeObj = new Object();
+			theDateBeforeObj.year = 1900 + theDateBefore.getYear();
+			theDateBeforeObj.month = theDateBefore.getMonth();
+			theDateBeforeObj.date = theDateBefore.getDate();
 
 			var threatLevels = ["low","high","medium"];
 			async.map(threatLevels, getThreatPerDay, function (err, result) {
@@ -611,8 +635,8 @@ module.exports = function(AnalysedInfo){
 					{
 						AnalysedInfo.find({$and : [
 								{"threatWarning": threat},
-								{'eventDateDate': {$gt: new Date(theDateBefore)}},
-								{'eventDateDate': {$lte: new Date(theDate)}}
+								{'eventDateDate': {$gte: new Date(theDateBeforeObj.year, theDateBeforeObj.month, theDateBeforeObj.date)}},
+								{'eventDateDate': {$lt: new Date(theDateObj.year, theDateObj.month, theDateObj.date)}}
 							]
 						}, function(err, doc) {
 							if (err) console.log(err);
@@ -623,8 +647,8 @@ module.exports = function(AnalysedInfo){
 						AnalysedInfo.find({$and : [
 								{"threatWarning": threat},
 	                      		{'dataSource': paramsource},
-								{'eventDateDate': {$gt: new Date(theDateBefore)}},
-								{'eventDateDate': {$lte: new Date(theDate)}}
+								{'eventDateDate': {$gte: new Date(theDateBeforeObj.year, theDateBeforeObj.month, theDateBeforeObj.date)}},
+								{'eventDateDate': {$lt: new Date(theDate)}}
 							]
 						}, function(err, doc) {
 							if (err) console.log(err);
