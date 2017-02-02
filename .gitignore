@@ -1,4 +1,5 @@
 *.*~
 *.orig
 *.save
+tes*.js
 npm-debug.log
