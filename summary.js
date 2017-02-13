@@ -4,6 +4,7 @@ module.exports = function(AnalysedInfo){
 	var async = require('async');
 	var dateFormat = require('dateformat');
 	var summArr = new Array();
+	var util = require('./util.js');
 
 	var kategori = require("./data/documentCategories.json");
 
@@ -203,18 +204,18 @@ module.exports = function(AnalysedInfo){
 		{
 			var newSumm = new Object();
 
-			var start;
-			var today = new Date();
-			if (paramwaktu == "lastday"){start = new Date().setDate(today.getDate()-1)};
-			if (paramwaktu == "lastweek"){start = new Date().setDate(today.getDate()-7)};
-			if (paramwaktu == "lastmonth"){start = new Date().setDate(today.getDate()-30)};
-			if (paramwaktu == "lastyear"){start = new Date().setDate(today.getDate()-365)};
+			var nPrev;
+			if (paramwaktu == "lastday"){nPrev=1};
+			if (paramwaktu == "lastweek"){nPrev=7};
+			if (paramwaktu == "lastmonth"){nPrev=30};
+			if (paramwaktu == "lastyear"){nPrev=365};
+			var thePrevDate = util.getNPrevDate(nPrev);
 			
 			if (paramsource == "all"){
 				AnalysedInfo.find({
 					$and: [
 						{'categoryMain' : category},
-						{'eventDateDate': {$gt: new Date(start)}}
+						{'eventDateDate': {$gte: thePrevDate}}
 					]
 				}, function (err, info) {
 					if (err)
@@ -232,7 +233,7 @@ module.exports = function(AnalysedInfo){
 					$and: [
 						{'categoryMain' : category},
 						{'dataSource': paramsource},
-						{'eventDateDate': {$gt: new Date(start)}} //sama dengan date.month bulan ini
+						{'eventDateDate': {$gte: thePrevDate}} //sama dengan date.month bulan ini
 					]
 				}, function (err, info) {
 					if (err)
@@ -269,12 +270,12 @@ module.exports = function(AnalysedInfo){
 
 	getPiechartCategoryData = function(subcategories, fn, paramCat, paramwaktu, paramsource)
 	{
-		var start;
-		var today = new Date();
-		if (paramwaktu == "lastday"){start = new Date().setDate(today.getDate()-1)};
-		if (paramwaktu == "lastweek"){start = new Date().setDate(today.getDate()-7)};
-		if (paramwaktu == "lastmonth"){start = new Date().setDate(today.getDate()-30)};
-		if (paramwaktu == "lastyear"){start = new Date().setDate(today.getDate()-365)};
+		var nPrev;
+		if (paramwaktu == "lastday"){nPrev=1};
+		if (paramwaktu == "lastweek"){nPrev=7};
+		if (paramwaktu == "lastmonth"){nPrev=30};
+		if (paramwaktu == "lastyear"){nPrev=365};
+		var thePrevDate = util.getNPrevDate(nPrev);
 
 		if (subcategories.length == 0) {
 			var newSumm = new Object();
@@ -283,7 +284,7 @@ module.exports = function(AnalysedInfo){
 				AnalysedInfo.find({
 					$and: [
 						{'categoryMain' : paramCat},
-						{'eventDateDate': {$gt: new Date(start)}}
+						{'eventDateDate': {$gte: thePrevDate}}
 					]
 				}, function (err, info) {
 					if (err)
@@ -299,7 +300,7 @@ module.exports = function(AnalysedInfo){
 					$and: [
 						{'categoryMain' : paramCat},
 						{'dataSource': paramsource},
-						{'eventDateDate': {$gt: new Date(start)}} //sama dengan date.month bulan ini
+						{'eventDateDate': {$gte: thePrevDate}} //sama dengan date.month bulan ini
 					]
 				}, function (err, info) {
 					if (err)
@@ -324,7 +325,7 @@ module.exports = function(AnalysedInfo){
 						$and: [
 							{'categoryMain' : paramCat},
 							{'categorySub1' : subcategory},
-							{'eventDateDate': {$gt: new Date(start)}}
+							{'eventDateDate': {$gte: thePrevDate}}
 						]
 					}, function (err, info) {
 						if (err)
@@ -343,7 +344,7 @@ module.exports = function(AnalysedInfo){
 							{'categoryMain' : paramCat},
 							{'categorySub1' : subcategory},
 							{'dataSource': paramsource},
-							{'eventDateDate': {$gt: new Date(start)}} //sama dengan date.month bulan ini
+							{'eventDateDate': {$gte: thePrevDate}} //sama dengan date.month bulan ini
 						]
 					}, function (err, info) {
 						if (err)
@@ -385,19 +386,19 @@ module.exports = function(AnalysedInfo){
 		{
 			var newSumm = new Object();
 
-			var start;
-			var today = new Date();
-			if (paramwaktu == "lastday"){start = new Date().setDate(today.getDate()-1)};
-			if (paramwaktu == "lastweek"){start = new Date().setDate(today.getDate()-7)};
-			if (paramwaktu == "lastmonth"){start = new Date().setDate(today.getDate()-30)};
-			if (paramwaktu == "lastyear"){start = new Date().setDate(today.getDate()-365)};
+			var nPrev;
+			if (paramwaktu == "lastday"){nPrev=1};
+			if (paramwaktu == "lastweek"){nPrev=7};
+			if (paramwaktu == "lastmonth"){nPrev=30};
+			if (paramwaktu == "lastyear"){nPrev=365};
+			var thePrevDate = util.getNPrevDate(nPrev);
 			
 			if (paramsource == "all"){
 				AnalysedInfo.find({
 					$and: [
 						{'categoryMain' : category},
 						{'threatWarning' : paramLev},
-						{'eventDateDate': {$gt: new Date(start)}}
+						{'eventDateDate': {$gte: thePrevDate}}
 					]
 				}, function (err, info) {
 					if (err)
@@ -416,7 +417,7 @@ module.exports = function(AnalysedInfo){
 						{'categoryMain' : category},
 						{'threatWarning' : paramLev},
 						{'dataSource': paramsource},
-						{'eventDateDate': {$gt: new Date(start)}} //sama dengan date.month bulan ini
+						{'eventDateDate': {$gte: thePrevDate}} //sama dengan date.month bulan ini
 					]
 				}, function (err, info) {
 					if (err)
@@ -456,25 +457,14 @@ module.exports = function(AnalysedInfo){
 
 		function getLinechartData (iter, callback1)
 		{
-			var today = new Date();
-			var theDate = new Date(new Date().setDate(today.getDate()-iter));
-			var theDateObj = new Object();
-			theDateObj.year = 1900 + theDate.getYear();
-			theDateObj.month = theDate.getMonth();
-			theDateObj.date = theDate.getDate();
-			var theDateBefore = new Date(new Date().setDate(today.getDate()-iter-1));
-			var theDateBeforeObj = new Object();
-			theDateBeforeObj.year = 1900 + theDateBefore.getYear();
-			theDateBeforeObj.month = theDateBefore.getMonth();
-			theDateBeforeObj.date = theDateBefore.getDate();
+			var thePrevDate = util.getNPrevDate(iter+1);
 
 			var threatLevels = ["low","high","medium"];
 			async.map(threatLevels, getThreatPerDay, function (err, result) {
 				if (err) console.log('Error: ' + err);
 				
-				// console.log('Finished: ', result);
 				var linechartData = new Object();
-				linechartData.date = dateFormat(theDateBefore, "yyyy-mm-dd");
+				linechartData.date = dateFormat(thePrevDate, "yyyy-mm-dd");
 				for (var i = 0; i < result.length; i++) {
 					linechartData[result[i].desc] = result[i].n;
 				}
@@ -486,20 +476,18 @@ module.exports = function(AnalysedInfo){
 				{
 					AnalysedInfo.find({$and : [
 							{"threatWarning": threat},
-							{'eventDateDate': {$gte: new Date(theDateBeforeObj.year, theDateBeforeObj.month, theDateBeforeObj.date)}},
-							{'eventDateDate': {$lt: new Date(theDateObj.year, theDateObj.month, theDateObj.date)}}
+							{'eventDateDate': {$gte: thePrevDate}}
 						]
 					}, function(err, doc) {
 						if (err) console.log(err);
-
+						
 						callback2(null, {"desc" : threat, "n": doc.length});
 					});
 				} else {
 					AnalysedInfo.find({$and : [
 							{"threatWarning": threat},
                       		{'dataSource': paramsource},
-							{'eventDateDate': {$gte: new Date(theDateBeforeObj.year, theDateBeforeObj.month, theDateBeforeObj.date)}},
-							{'eventDateDate': {$lt: new Date(theDateObj.year, theDateObj.month, theDateObj.date)}}
+							{'eventDateDate': {$gte: thePrevDate}}
 						]
 					}, function(err, doc) {
 						if (err) console.log(err);
@@ -523,23 +511,12 @@ module.exports = function(AnalysedInfo){
 		async.times(nTimes, getLinechartData, function (err, resultArray) {
 			if (err) fn(err);
 
-			// console.log("getLinechartData result ", resultArray);
 			fn(resultArray);
 		});
 
 		function getLinechartData (iter, callback1)
 		{
-			var today = new Date();
-			var theDate = new Date(new Date().setDate(today.getDate()-iter));
-			var theDateObj = new Object();
-			theDateObj.year = 1900 + theDate.getYear();
-			theDateObj.month = theDate.getMonth();
-			theDateObj.date = theDate.getDate();
-			var theDateBefore = new Date(new Date().setDate(today.getDate()-iter-1));
-			var theDateBeforeObj = new Object();
-			theDateBeforeObj.year = 1900 + theDateBefore.getYear();
-			theDateBeforeObj.month = theDateBefore.getMonth();
-			theDateBeforeObj.date = theDateBefore.getDate();
+			var thePrevDate = util.getNPrevDate(iter+1);
 
 			var threatLevels = ["low","high","medium"];
 			async.map(threatLevels, getThreatPerDay, function (err, result) {
@@ -547,7 +524,7 @@ module.exports = function(AnalysedInfo){
 				
 				// console.log('Finished: ', result);
 				var linechartData = new Object();
-				linechartData.date = dateFormat(theDateBefore, "yyyy-mm-dd");
+				linechartData.date = dateFormat(thePrevDate, "yyyy-mm-dd");
 				for (var i = 0; i < result.length; i++) {
 					linechartData[result[i].desc] = result[i].n;
 				}
@@ -559,8 +536,7 @@ module.exports = function(AnalysedInfo){
 				{
 					AnalysedInfo.find({$and : [
 							{"threatWarning": threat},
-							{'eventDateDate': {$gte: new Date(theDateBeforeObj.year, theDateBeforeObj.month, theDateBeforeObj.date)}},
-							{'eventDateDate': {$lt: new Date(theDateObj.year, theDateObj.month, theDateObj.date)}},
+							{'eventDateDate': {$gte: thePrevDate}},
 							{'categoryMain' : paramCat}
 						]
 					}, function(err, doc) {
@@ -572,8 +548,7 @@ module.exports = function(AnalysedInfo){
 					AnalysedInfo.find({$and : [
 							{"threatWarning": threat},
                       		{'dataSource': paramsource},
-							{'eventDateDate': {$gte: new Date(theDateBeforeObj.year, theDateBeforeObj.month, theDateBeforeObj.date)}},
-							{'eventDateDate': {$lt: new Date(theDateObj.year, theDateObj.month, theDateObj.date)}},
+							{'eventDateDate': {$gte: thePrevDate}},
 							{'categoryMain' : paramCat}
 						]
 					}, function(err, doc) {
@@ -598,23 +573,12 @@ module.exports = function(AnalysedInfo){
 		async.times(nTimes, getLinechartData, function (err, resultArray) {
 			if (err) fn(err);
 
-			console.log("getLinechartData result ", resultArray);
 			fn(resultArray);
 		});
 
 		function getLinechartData (iter, callback1)
 		{
-			var today = new Date();
-			var theDate = new Date(new Date().setDate(today.getDate()-iter));
-			var theDateObj = new Object();
-			theDateObj.year = 1900 + theDate.getYear();
-			theDateObj.month = theDate.getMonth();
-			theDateObj.date = theDate.getDate();
-			var theDateBefore = new Date(new Date().setDate(today.getDate()-iter-1));
-			var theDateBeforeObj = new Object();
-			theDateBeforeObj.year = 1900 + theDateBefore.getYear();
-			theDateBeforeObj.month = theDateBefore.getMonth();
-			theDateBeforeObj.date = theDateBefore.getDate();
+			var thePrevDate = util.getNPrevDate(iter+1);
 
 			var threatLevels = ["low","high","medium"];
 			async.map(threatLevels, getThreatPerDay, function (err, result) {
@@ -622,7 +586,7 @@ module.exports = function(AnalysedInfo){
 				
 				// console.log('Finished: ', result);
 				var linechartData = new Object();
-				linechartData.date = dateFormat(theDateBefore, "yyyy-mm-dd");
+				linechartData.date = dateFormat(thePrevDate, "yyyy-mm-dd");
 				for (var i = 0; i < result.length; i++) {
 					linechartData[result[i].desc] = result[i].n;
 				}
@@ -635,8 +599,7 @@ module.exports = function(AnalysedInfo){
 					{
 						AnalysedInfo.find({$and : [
 								{"threatWarning": threat},
-								{'eventDateDate': {$gte: new Date(theDateBeforeObj.year, theDateBeforeObj.month, theDateBeforeObj.date)}},
-								{'eventDateDate': {$lt: new Date(theDateObj.year, theDateObj.month, theDateObj.date)}}
+								{'eventDateDate': {$gte: thePrevDate}}
 							]
 						}, function(err, doc) {
 							if (err) console.log(err);
@@ -647,8 +610,7 @@ module.exports = function(AnalysedInfo){
 						AnalysedInfo.find({$and : [
 								{"threatWarning": threat},
 	                      		{'dataSource': paramsource},
-								{'eventDateDate': {$gte: new Date(theDateBeforeObj.year, theDateBeforeObj.month, theDateBeforeObj.date)}},
-								{'eventDateDate': {$lt: new Date(theDate)}}
+								{'eventDateDate': {$gte: thePrevDate}}
 							]
 						}, function(err, doc) {
 							if (err) console.log(err);

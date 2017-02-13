@@ -11,6 +11,7 @@ var Twitter     = require('./app/models/twitter');
 
 var AnalysedInfo    = require('./app/models/analysedinfo');
 var summ = require('./summary.js')(AnalysedInfo);
+var util = require('./util.js');
 // var News    = require('./app/models/news');
 // var Webpage    = require('./app/models/crawl_webpage');
 
@@ -42,7 +43,7 @@ var router = express.Router();              // get an instance of the express Ro
 // middleware to use for all requests
 router.use(function(req, res, next) {
     // do logging
-    console.log('---Something is happening---');
+    console.log('---Something is happening---', req.params);
     next(); // make sure we go to the next routes and don't stop here
 });
 
@@ -286,15 +287,15 @@ router.route('/analysedinfo')
 // paramwaktu = [lastday, lastweek, lastmonth, lastyear]
 router.route('/analysedinfo/filter/:paramwaktu/source/:paramsource')
     .get(function(req, res) {
-        var start;
-        var today = new Date();
-        if (req.params.paramwaktu == "lastday"){start = new Date().setDate(today.getDate()-1)};
-        if (req.params.paramwaktu == "lastweek"){start = new Date().setDate(today.getDate()-7)};
-        if (req.params.paramwaktu == "lastmonth"){start = new Date().setDate(today.getDate()-30)};
-        if (req.params.paramwaktu == "lastyear"){start = new Date().setDate(today.getDate()-365)};
+        var nPrev;
+        if (req.params.paramwaktu == "lastday"){nPrev=1};
+        if (req.params.paramwaktu == "lastweek"){nPrev=7};
+        if (req.params.paramwaktu == "lastmonth"){nPrev=30};
+        if (req.params.paramwaktu == "lastyear"){nPrev=365};
+        var thePrevDate = util.getNPrevDate(nPrev);
         
         if (req.params.paramsource == "all"){
-            AnalysedInfo.find({'eventDateDate': {$gt: new Date(start)}}, function (err, info) {
+            AnalysedInfo.find({'eventDateDate': {$gte: thePrevDate}}, function (err, info) {
                 if (err)
                     res.send(err);
                 res.json(info);
@@ -304,7 +305,7 @@ router.route('/analysedinfo/filter/:paramwaktu/source/:paramsource')
             AnalysedInfo.find({
                 $and: [
                       {'dataSource': req.params.paramsource},
-                      {'eventDateDate': {$gt: new Date(start)}} //sama dengan date.month bulan ini
+                      {'eventDateDate': {$gte: thePrevDate}} //sama dengan date.month bulan ini
                 ]
             }, function (err, info) {
                 if (err)
@@ -330,18 +331,18 @@ router.route('/analysedinfo/filter/:paramwaktu/source/:paramsource')
 
 router.route('/analysedinfo/category/:paramcat/filter/:paramwaktu/source/:paramsource')
     .get(function(req, res) {
-        var start;
-        var today = new Date();
-        if (req.params.paramwaktu == "lastday"){start = new Date().setDate(today.getDate()-1)};
-        if (req.params.paramwaktu == "lastweek"){start = new Date().setDate(today.getDate()-7)};
-        if (req.params.paramwaktu == "lastmonth"){start = new Date().setDate(today.getDate()-30)};
-        if (req.params.paramwaktu == "lastyear"){start = new Date().setDate(today.getDate()-365)};
+        var nPrev;
+        if (req.params.paramwaktu == "lastday"){nPrev=1};
+        if (req.params.paramwaktu == "lastweek"){nPrev=7};
+        if (req.params.paramwaktu == "lastmonth"){nPrev=30};
+        if (req.params.paramwaktu == "lastyear"){nPrev=365};
+        var thePrevDate = util.getNPrevDate(nPrev);
         
         if (req.params.paramsource == "all"){
             AnalysedInfo.find({
                 $and: [
                       {'categoryMain': req.params.paramcat},
-                      {'eventDateDate': {$gt: new Date(start)}} //sama dengan date.month bulan ini
+                      {'eventDateDate': {$gte: thePrevDate}} //sama dengan date.month bulan ini
                 ]
             }, function (err, info) {
                 if (err)
@@ -354,7 +355,7 @@ router.route('/analysedinfo/category/:paramcat/filter/:paramwaktu/source/:params
                 $and: [
                       {'categoryMain': req.params.paramcat},
                       {'dataSource': req.params.paramsource},
-                      {'eventDateDate': {$gt: new Date(start)}} //sama dengan date.month bulan ini
+                      {'eventDateDate': {$gte: thePrevDate}} //sama dengan date.month bulan ini
                 ]
             }, function (err, info) {
                 if (err)
@@ -380,18 +381,18 @@ router.route('/analysedinfo/category/:paramcat/filter/:paramwaktu/source/:params
 
 router.route('/analysedinfo/threatlevel/:paramlev/filter/:paramwaktu/source/:paramsource')
     .get(function(req, res) {
-        var start;
-        var today = new Date();
-        if (req.params.paramwaktu == "lastday"){start = new Date().setDate(today.getDate()-1)};
-        if (req.params.paramwaktu == "lastweek"){start = new Date().setDate(today.getDate()-7)};
-        if (req.params.paramwaktu == "lastmonth"){start = new Date().setDate(today.getDate()-30)};
-        if (req.params.paramwaktu == "lastyear"){start = new Date().setDate(today.getDate()-365)};
+        var nPrev;
+        if (req.params.paramwaktu == "lastday"){nPrev=1};
+        if (req.params.paramwaktu == "lastweek"){nPrev=7};
+        if (req.params.paramwaktu == "lastmonth"){nPrev=30};
+        if (req.params.paramwaktu == "lastyear"){nPrev=365};
+        var thePrevDate = util.getNPrevDate(nPrev);
         
         if (req.params.paramsource == "all"){
             AnalysedInfo.find({
                 $and: [
                       {'threatWarning': req.params.paramlev},
-                      {'eventDateDate': {$gt: new Date(start)}} //sama dengan date.month bulan ini
+                      {'eventDateDate': {$gte: thePrevDate}} //sama dengan date.month bulan ini
                 ]
             }, function (err, info) {
                 if (err)
@@ -404,7 +405,7 @@ router.route('/analysedinfo/threatlevel/:paramlev/filter/:paramwaktu/source/:par
                 $and: [
                       {'threatWarning': req.params.paramlev},
                       {'dataSource': req.params.paramsource},
-                      {'eventDateDate': {$gt: new Date(start)}} //sama dengan date.month bulan ini
+                      {'eventDateDate': {$gte: thePrevDate}} //sama dengan date.month bulan ini
                 ]
             }, function (err, info) {
                 if (err)
