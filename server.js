@@ -123,17 +123,17 @@ router.route('/rawpesans/:pesan_id')
     })
 
 // B4. berdasarkan date tertentu
-router.route('/rawpesans/:st/:fn')
-    .get(function(req, res) {
-        START = new Date(req.params.st);
-        END = new Date(req.params.fn);
-        END.setDate(END.getDate() + 1);
-        Pesan.find({'date': {$gt: START, $lte: END}}, function(err, pesan) {
-            if (err)
-                res.send(err);
-            res.json(pesan);
-        });
-    })
+// router.route('/rawpesans/:st/:fn')
+//     .get(function(req, res) {
+//         START = new Date(req.params.st);
+//         END = new Date(req.params.fn);
+//         END.setDate(END.getDate() + 1);
+//         Pesan.find({'date': {$gt: START, $lte: END}}, function(err, pesan) {
+//             if (err)
+//                 res.send(err);
+//             res.json(pesan);
+//         });
+//     })
 
 // B4.5 berdasarkan filter param date
 router.route('/rawpesans/filter/:paramwaktu')
@@ -144,10 +144,11 @@ router.route('/rawpesans/filter/:paramwaktu')
         if (req.params.paramwaktu == "lastmonth"){nPrev=30};
         if (req.params.paramwaktu == "lastyear"){nPrev=365};
         var thePrevDate = util.getNPrevDate(nPrev);
-
+        
         Pesan.find({'date': {$gte: thePrevDate}}, function(err, pesan) {
             if (err)
                 res.send(err);
+
             res.json(pesan);
         });
     })
@@ -158,47 +159,47 @@ router.route('/rawpesans/isi/:pesan')
         Pesan.find({ 'pesan': {$regex:req.params.pesan, $options: 'i'}}, function (err, pesan) {
             if (err)
                 res.send(err);
-            res.json(twitter);
+            res.json(pesan);
         });
     })
 
 
 // -------------------------------------------------------------------
 // C. update (put) pesan intel dgn id tertentu:
-router.route('/rawpesans/put/:pesan_id')
-   .put(function(req, res) {
+// router.route('/rawpesans/put/:pesan_id')
+//    .put(function(req, res) {
 
-        // use our bear model to find the bear we want
-        Pesan.findById(req.params.pesan_id, function(err, pesan) {
-            if (err)
-                res.send(err);
+//         // use our bear model to find the bear we want
+//         Pesan.findById(req.params.pesan_id, function(err, pesan) {
+//             if (err)
+//                 res.send(err);
 
-            // update the pesan 
-            pesan.dari      = req.body.dari;  
-            pesan.type      = req.body.type;
-            pesan.penerima  = req.body.penerima;
-            pesan.date      = req.body.date;
-            pesan.pesan     = req.body.pesan;
+//             // update the pesan 
+//             pesan.dari      = req.body.dari;  
+//             pesan.type      = req.body.type;
+//             pesan.penerima  = req.body.penerima;
+//             pesan.date      = req.body.date;
+//             pesan.pesan     = req.body.pesan;
 
-            // save the pesan
-            pesan.save(function(err) {
-                if (err)
-                    res.send(err);
-                res.json({ message: 'Pesan updated!' });
-            });
-        });
-    })
+//             // save the pesan
+//             pesan.save(function(err) {
+//                 if (err)
+//                     res.send(err);
+//                 res.json({ message: 'Pesan updated!' });
+//             });
+//         });
+//     })
 
 // -------------------------------------------------------------------
 // D. delete pesan intel dgn id tertentu
-router.route('/rawpesans/delete/:pesan_id')
-    .delete(function(req, res) {
-        Pesan.remove({_id: req.params.pesan_id}, function(err, pesan) {
-            if (err)
-                res.send(err);
-            res.json({ message: 'Pesan '+pesan+' successfully deleted' });
-        });
-    });
+// router.route('/rawpesans/delete/:pesan_id')
+//     .delete(function(req, res) {
+//         Pesan.remove({_id: req.params.pesan_id}, function(err, pesan) {
+//             if (err)
+//                 res.send(err);
+//             res.json({ message: 'Pesan '+pesan+' successfully deleted' });
+//         });
+//     });
 
 
 
