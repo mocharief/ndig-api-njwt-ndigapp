@@ -135,6 +135,23 @@ router.route('/rawpesans/:st/:fn')
         });
     })
 
+// B4.5 berdasarkan filter param date
+router.route('/rawpesans/filter/:paramwaktu')
+    .get(function(req, res) {
+        var nPrev;
+        if (req.params.paramwaktu == "lastday"){nPrev=1};
+        if (req.params.paramwaktu == "lastweek"){nPrev=7};
+        if (req.params.paramwaktu == "lastmonth"){nPrev=30};
+        if (req.params.paramwaktu == "lastyear"){nPrev=365};
+        var thePrevDate = util.getNPrevDate(nPrev);
+
+        Pesan.find({'date': {$gte: thePrevDate}}, function(err, pesan) {
+            if (err)
+                res.send(err);
+            res.json(pesan);
+        });
+    })
+
 // B5. berdasarkan isi pesan (ANALISIS ISI PESAN INTEL)
 router.route('/rawpesans/isi/:pesan')
     .get(function(req, res) {
