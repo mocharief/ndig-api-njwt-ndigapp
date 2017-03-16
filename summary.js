@@ -189,8 +189,14 @@ module.exports = function(AnalysedInfo){
 		console.log("getPiechartSummary " + paramwaktu + " " + paramsource);
 		summArr.length = 0;
 
-		// Ambil list kota
-		AnalysedInfo.distinct("categoryMain", function(err, categories) {
+		// Ambil list kategori
+		// AnalysedInfo.distinct("categoryMain", function(err, categories) {
+		// 	if (err)
+		// 		res.send(err);
+
+		// 	getPiechartData(categories, fn, paramwaktu, paramsource);
+		// });
+		AnalysedInfo.aggregate([{ "$group": { "_id": "$categoryMain" }}, {$sort:{"_id":1}}], function(err, categories) {
 			if (err)
 				res.send(err);
 
@@ -200,7 +206,7 @@ module.exports = function(AnalysedInfo){
 
 	getPiechartData = function(categories, fn, paramwaktu, paramsource)
 	{
-		async.each(categories, function(category , eachcallback)
+		async.eachSeries(categories, function(category , eachcallback)
 		{
 			var newSumm = new Object();
 
@@ -214,14 +220,14 @@ module.exports = function(AnalysedInfo){
 			if (paramsource == "all"){
 				AnalysedInfo.find({
 					$and: [
-						{'categoryMain' : category},
+						{'categoryMain' : category._id},
 						{'eventDateDate': {$gte: thePrevDate}}
 					]
 				}, function (err, info) {
 					if (err)
 						fn(err);
 
-					newSumm.category = category;
+					newSumm.category = category._id;
 					newSumm.amount = info.length;
 					summArr.push(newSumm);
 
@@ -231,7 +237,7 @@ module.exports = function(AnalysedInfo){
 			else {
 				AnalysedInfo.find({
 					$and: [
-						{'categoryMain' : category},
+						{'categoryMain' : category._id},
 						{'dataSource': paramsource},
 						{'eventDateDate': {$gte: thePrevDate}} //sama dengan date.month bulan ini
 					]
@@ -239,7 +245,7 @@ module.exports = function(AnalysedInfo){
 					if (err)
 						fn(err);
 
-					newSumm.category = category;
+					newSumm.category = category._id;
 					newSumm.amount = info.length;
 					summArr.push(newSumm);
 
