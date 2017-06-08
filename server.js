@@ -17,7 +17,7 @@ var util = require('./util.js');
 
 var mongoose    = require('mongoose');
 // mongoose.connect('mongodb://localhost:27017/pesanIntelDB'); // connect to our database
-mongoose.connect('mongodb://192.168.1.241:27017/dias'); // connect to our database
+mongoose.connect('mongodb://localhost:27017/dias'); // connect to our database
 // mongoose.connect('mongodb://192.168.1.8:27017/skmchatbot_message'); // connect to our database
 
 
@@ -121,6 +121,37 @@ router.route('/rawpesans/:pesan_id')
             res.json(pesan);
         });
     })
+
+   .put(function(req, res) {
+        Pesan.findById(req.params.pesan_id, function(err, pesan) {
+            if (err)
+                res.send(err);
+
+            // update the pesan 
+            pesan.dari      = pesan.dari;  // ngisi param
+            pesan.type      = pesan.type;
+            pesan.date      = pesan.date;
+            pesan.category  = pesan.category;
+            pesan.laporan   = pesan.laporan;
+            pesan.lokasi    = req.body.lokasi;
+
+            // var pesan = new Pesan();      // create a new instance of the Pesan model
+            // pesan.dari      = req.body.dari;  // ngisi param
+            // pesan.type      = req.body.type;
+            // pesan.date      = req.body.date;
+            // pesan.category  = req.body.category;
+            // pesan.laporan   = req.body.pesan;
+
+
+            // save the pesan
+            pesan.save(function(err) {
+                if (err)
+                    res.send(err);
+                res.json({ message: 'Pesan updated!' });
+            });
+        });
+    })
+
 
 // B4. berdasarkan date tertentu
 // router.route('/rawpesans/:st/:fn')
