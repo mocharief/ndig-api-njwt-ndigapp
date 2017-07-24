@@ -591,8 +591,29 @@ router.route('/linechart/threatlevel/:paramlev/filter/:paramwaktu/source/:params
     });
 
 
-//njwt
+// -----------------------USER AUTHENTICATION-----------------------------
+// -----------------------USER AUTHENTICATION-----------------------------
+// -----------------------USER AUTHENTICATION-----------------------------
+// -----------------------USER AUTHENTICATION-----------------------------
+router.post('/signup', function(req, res) {
+    if(!req.body.email || !req.body.nama || !req.body.role || !req.body.password){
+        res.send('Please insert the user data!');
+    } else {
+        var newUser = new User({
+            email: req.body.email,
+            nama: req.body.nama,
+            password: req.body.password,
+            role: req.body.role
+        })
 
+        newUser.save(function(err){
+            if(err){
+                return res.send('Email or name already exists!')
+            }
+            res.send(req.body.nama + ' created!')
+        });
+    }
+});
 
 
 // =============================================================================

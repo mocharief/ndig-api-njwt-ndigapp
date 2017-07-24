@@ -8,7 +8,7 @@ var UserSchema  = new Schema ({
         unique: true,
         required: true
     },
-    name: {
+    nama: {
         type: String,
         unique: true,
         required: true
