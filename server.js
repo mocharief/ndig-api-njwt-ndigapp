@@ -20,10 +20,22 @@ var mongoose    = require('mongoose');
 mongoose.connect('mongodb://localhost:27017/dias'); // connect to our database
 // mongoose.connect('mongodb://192.168.1.8:27017/skmchatbot_message'); // connect to our database
 
+// add package untuk sistem autentikasi njwt
+var uuidV4      = require('uuid/v4');
+var nJwt        = require('njwt');
+var morgan      = require('morgan');
+var cors        = require('cors');
+var generateKey = uuidV4();
+var User        = require('./app/models/user');
+var signingKey  = generateKey;   
 
 // configure app to use bodyParser()
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
+
+// configure app to use morgan and cors
+app.use(morgan('dev'));
+app.use(cors());
 
 // add header
 app.all('/*', function(req, res, next) {
@@ -579,6 +591,7 @@ router.route('/linechart/threatlevel/:paramlev/filter/:paramwaktu/source/:params
     });
 
 
+//njwt
 
 
 
