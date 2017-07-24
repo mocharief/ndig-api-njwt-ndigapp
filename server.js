@@ -615,6 +615,30 @@ router.post('/signup', function(req, res) {
     }
 });
 
+router.post('/authenticate', function(req, res){
+    User.findOne({
+        email: req.body.email
+    }, function(err, user){
+        if(err) throw err;
+
+        if(!user){
+            res.send('Authentication failed! Email not found');
+        } else if(user){
+            user.comparePassword(req.body.password, function(err, isMatch){
+                if(isMatch && !err){
+                    var jwt = nJwt.create(user, generateKey);
+                    var token = jwt.compact();
+                    res.json({
+                        token: token,
+                        user: user.nama
+                    });
+                } else {
+                    res.send('Authentication failed! Wrong password');
+                }
+            });
+        }
+    });
+});
 
 // =============================================================================
 // all of our routes will be prefixed with /api
