@@ -597,7 +597,8 @@ router.route('/linechart/threatlevel/:paramlev/filter/:paramwaktu/source/:params
 // -----------------------USER AUTHENTICATION-----------------------------
 router.post('/signup', function(req, res) {
     if(!req.body.email || !req.body.nama || !req.body.password || !req.body.role){
-        res.send('Please insert the user data!');
+        res.status(209)
+            .send('Please insert the user data!');
     } else {
         var newUser = new User({
             email: req.body.email,
@@ -608,7 +609,8 @@ router.post('/signup', function(req, res) {
 
         newUser.save(function(err){
             if(err){
-                return res.send('Email or name already exists!')
+                return res.status(409)
+                    .send('Email or name already exists!')
             }
             res.send(req.body.nama + ' created!')
         });
@@ -622,7 +624,8 @@ router.post('/authenticate', function(req, res){
         if(err) throw err;
 
         if(!user){
-            res.send('Authentication failed! Email not found');
+            res.status(404)
+                .send('Authentication failed! Email not found');
         } else if(user){
             user.comparePassword(req.body.password, function(err, isMatch){
                 if(isMatch && !err){
@@ -634,7 +637,8 @@ router.post('/authenticate', function(req, res){
                     });
                     //console.log(jwt);
                 } else {
-                    res.send('Authentication failed! Wrong password');
+                    res.status(404)
+                        .send('Authentication failed! Wrong password');
                 }
             });
         }
@@ -646,7 +650,7 @@ router.get('/verify-token', function(req, res){
     //res.send(token);
     nJwt.verify(token, signingKey, function(err,verifiedJwt) {
         if (err) {
-            res.send(err);
+            res.status(404).send(err);
         } else {
             res.send(verifiedJwt);
         }
