@@ -596,7 +596,7 @@ router.route('/linechart/threatlevel/:paramlev/filter/:paramwaktu/source/:params
 // -----------------------USER AUTHENTICATION-----------------------------
 // -----------------------USER AUTHENTICATION-----------------------------
 router.post('/signup', function(req, res) {
-    if(!req.body.email || !req.body.nama || !req.body.role || !req.body.password){
+    if(!req.body.email || !req.body.nama || !req.body.password || !req.body.role){
         res.send('Please insert the user data!');
     } else {
         var newUser = new User({
@@ -632,10 +632,23 @@ router.post('/authenticate', function(req, res){
                         token: token,
                         user: user.nama
                     });
+                    //console.log(jwt);
                 } else {
                     res.send('Authentication failed! Wrong password');
                 }
             });
+        }
+    });
+});
+
+router.get('/verify-token', function(req, res){
+    var token = req.headers.token;
+    //res.send(token);
+    nJwt.verify(token, signingKey, function(err,verifiedJwt) {
+        if (err) {
+            res.send(err);
+        } else {
+            res.send(verifiedJwt);
         }
     });
 });
