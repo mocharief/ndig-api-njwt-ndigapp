@@ -37,6 +37,12 @@ app.use(bodyParser.json());
 app.use(morgan('dev'));
 app.use(cors());
 
+// configure app to use cors
+//var corsOptions = {
+//    origin: 'http://localhost:9000',
+//    optionsSuccessStatus: 200 //
+//}
+
 // add header
 app.all('/*', function(req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");
@@ -630,6 +636,7 @@ router.post('/authenticate', function(req, res){
             user.comparePassword(req.body.password, function(err, isMatch){
                 if(isMatch && !err){
                     var jwt = nJwt.create(user, generateKey);
+                    jwt.setExpiration(new Date().getTime() + (30*1000)); //(second * minute * 1000) in milisecond
                     var token = jwt.compact();
                     res.json({
                         token: token,
