@@ -601,7 +601,7 @@ router.route('/linechart/threatlevel/:paramlev/filter/:paramwaktu/source/:params
 // -----------------------USER AUTHENTICATION-----------------------------
 // -----------------------USER AUTHENTICATION-----------------------------
 // -----------------------USER AUTHENTICATION-----------------------------
-router.post('/signup', cors(corsOptions), function(req, res) {
+router.post('/signup', function(req, res) {
 //if (port === corsOptions.port){
     if(!req.body.email || !req.body.nama || !req.body.password || !req.body.role){
         res.status(209)
