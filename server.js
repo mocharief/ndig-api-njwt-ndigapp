@@ -39,8 +39,8 @@ app.use(cors());
 
 // configure app to use cors
 //var corsOptions = {
-//    port: 9000',
-//    optionsSuccessStatus: 200 //
+//    port: 9099,
+//    optionsSuccessStatus: 200,
 //}
 
 // add header
@@ -601,7 +601,8 @@ router.route('/linechart/threatlevel/:paramlev/filter/:paramwaktu/source/:params
 // -----------------------USER AUTHENTICATION-----------------------------
 // -----------------------USER AUTHENTICATION-----------------------------
 // -----------------------USER AUTHENTICATION-----------------------------
-router.post('/signup', function(req, res) {
+router.post('/signup', cors(corsOptions), function(req, res) {
+//if (port === corsOptions.port){
     if(!req.body.email || !req.body.nama || !req.body.password || !req.body.role){
         res.status(209)
             .send('Please insert the user data!');
@@ -621,6 +622,9 @@ router.post('/signup', function(req, res) {
             res.send(req.body.nama + ' created!')
         });
     }
+//} else {
+//    res.status(403).send('This is CORS-enabled for only http://localhost:' + corsOptions.port);
+//}
 });
 
 router.post('/authenticate', function(req, res){
@@ -646,10 +650,8 @@ router.post('/authenticate', function(req, res){
                     jwt.setExpiration(new Date().getTime() + (30*1000)); //(second * minute * 1000) in milisecond
                     var token = jwt.compact();
                     res.json({
-                        token: token,
-                        jwt: jwt
+                        token: token
                     });
-                    //console.log(jwt);
                 } else {
                     res.status(404)
                         .send('Authentication failed! Wrong password');
@@ -663,20 +665,12 @@ router.get('/verify-token', function(req, res){
     var token = req.headers.token;
     nJwt.verify(token, signingKey, function(err,verifiedJwt) {
         if (err) {
-            res.status(404).send(err);
+            res.status(401).send(err);
         } else {
             res.send(verifiedJwt);
         }
     });
 });
-
-//router.get('/test-cors', cors(corsOptions), function(req, res, next) {
-//    if (port === corsOptions.port) {
-//    res.send(corsOptions.status).json({msg:'Welcome to the jungle'})
-//    } else {
-//    res.json({msg: 'this is CORS-enabled for only http://localhost:' + corsOptions.port})
-//    }
-//})
 
 // =============================================================================
 // all of our routes will be prefixed with /api
