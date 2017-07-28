@@ -39,7 +39,7 @@ app.use(cors());
 
 // configure app to use cors
 //var corsOptions = {
-//    origin: 'http://localhost:9000',
+//    port: 9000',
 //    optionsSuccessStatus: 200 //
 //}
 
@@ -635,12 +635,19 @@ router.post('/authenticate', function(req, res){
         } else if(user){
             user.comparePassword(req.body.password, function(err, isMatch){
                 if(isMatch && !err){
-                    var jwt = nJwt.create(user, generateKey);
+                    var claims = {
+                        iss: "NDIG-DIAS",
+                        sub: user.nama,
+                        nama: user.nama,
+                        role: user.role,
+                        _id: user._id
+                    };
+                    var jwt = nJwt.create(claims, generateKey);
                     jwt.setExpiration(new Date().getTime() + (30*1000)); //(second * minute * 1000) in milisecond
                     var token = jwt.compact();
                     res.json({
                         token: token,
-                        user: user.nama
+                        jwt: jwt
                     });
                     //console.log(jwt);
                 } else {
@@ -654,7 +661,6 @@ router.post('/authenticate', function(req, res){
 
 router.get('/verify-token', function(req, res){
     var token = req.headers.token;
-    //res.send(token);
     nJwt.verify(token, signingKey, function(err,verifiedJwt) {
         if (err) {
             res.status(404).send(err);
@@ -663,6 +669,14 @@ router.get('/verify-token', function(req, res){
         }
     });
 });
+
+//router.get('/test-cors', cors(corsOptions), function(req, res, next) {
+//    if (port === corsOptions.port) {
+//    res.send(corsOptions.status).json({msg:'Welcome to the jungle'})
+//    } else {
+//    res.json({msg: 'this is CORS-enabled for only http://localhost:' + corsOptions.port})
+//    }
+//})
 
 // =============================================================================
 // all of our routes will be prefixed with /api
