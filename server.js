@@ -639,19 +639,8 @@ router.post('/authenticate', function(req, res){
         } else if(user){
             user.comparePassword(req.body.password, function(err, isMatch){
                 if(isMatch && !err){
-                    var claims = {
-                        iss: "NDIG-DIAS",
-                        sub: user.nama,
-                        nama: user.nama,
-                        role: user.role,
-                        _id: user._id
-                    };
-                    var jwt = nJwt.create(claims, generateKey);
-                    jwt.setExpiration(new Date().getTime() + (30*1000)); //(second * minute * 1000) in milisecond
-                    var token = jwt.compact();
-                    res.json({
-                        token: token
-                    });
+                    var token = getToken(user, signingKey);
+                    res.json ({ token : token });
                 } else {
                     res.status(404)
                         .send('Authentication failed! Wrong password');
@@ -663,14 +652,42 @@ router.post('/authenticate', function(req, res){
 
 router.get('/verify-token', function(req, res){
     var token = req.headers.token;
-    nJwt.verify(token, signingKey, function(err,verifiedJwt) {
-        if (err) {
-            res.status(401).send(err);
-        } else {
-            res.send(verifiedJwt);
-        }
-    });
+    if (token) {
+        nJwt.verify(token, signingKey, function(err,verifiedJwt) {
+            if (err) {
+                res.send(err);
+            } else {
+                if (verifiedJwt.body.exp > Math.floor(Date.now()/1000)){
+                    if ((verifiedJwt.body.exp-Math.floor(Date.now()/1000)) <= 10) {
+                        var newToken = getToken(verifiedJwt.body, signingKey);
+                        res.json({ newToken : newToken });
+                    } else {
+                        res.send(verifiedJwt);
+                    }
+                } else {
+                    res.status(401).send(verifiedJwt);
+                }
+            }
+        });
+    } else {
+        return (err);
+    }
 });
+
+// function get token using njwt
+function getToken(user, secretKey) {
+    var claims = {
+        iss: "NDIG-DIAS",
+        sub: user.nama,
+        nama: user.nama,
+        role: user.role,
+        _id: user._id,
+    };
+    var jwt = nJwt.create(claims, secretKey);
+    jwt.setExpiration(Date.now() + (30*1000)); //(second * minute * 1000) in milisecond
+    var token = jwt.compact();
+    return token;
+}
 
 // =============================================================================
 // all of our routes will be prefixed with /api
