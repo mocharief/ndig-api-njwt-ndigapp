@@ -601,32 +601,62 @@ router.route('/linechart/threatlevel/:paramlev/filter/:paramwaktu/source/:params
 // -----------------------USER AUTHENTICATION-----------------------------
 // -----------------------USER AUTHENTICATION-----------------------------
 // -----------------------USER AUTHENTICATION-----------------------------
-router.post('/signup', function(req, res) {
-//if (port === corsOptions.port){
-    if(!req.body.email || !req.body.nama || !req.body.password || !req.body.role){
-        res.status(209)
-            .send('Please insert the user data!');
-    } else {
-        var newUser = new User({
-            email: req.body.email,
-            nama: req.body.nama,
-            password: req.body.password,
-            role: req.body.role
-        })
+router.route('/usermanagement/signup')
+    // Router Signup
+    .post(function(req, res) {
+    //if (port === corsOptions.port){
+        if(!req.body.email || !req.body.nama || !req.body.password || !req.body.role){
+            res.status(209)
+                .send('Please insert the user data!');
+        } else {
+            var newUser = new User({
+                email: req.body.email,
+                nama: req.body.nama,
+                password: req.body.password,
+                role: req.body.role
+            })
 
-        newUser.save(function(err){
-            if(err){
-                return res.status(409)
-                    .send('Email or name already exists!')
-            }
-            res.send(req.body.nama + ' created!')
-        });
-    }
-//} else {
-//    res.status(403).send('This is CORS-enabled for only http://localhost:' + corsOptions.port);
-//}
-});
+            newUser.save(function(err){
+                if(err){
+                    return res.status(409)
+                        .send('Email or name already exists!')
+                }
+                res.send(req.body.nama + ' created!')
+            });
+        }
+    //} else {
+    //    res.status(403).send('This is CORS-enabled for only http://localhost:' + corsOptions.port);
+    //}
+    });
 
+// Router get data user dari mongoDB
+router.route('/usermanagement/account-data')
+    .get(function(req,res) {
+        var token = req.headers.token;
+        if (token) {
+            nJwt.verify(token, signingKey, function(err, verifiedJwt){
+                if (err){
+                    res.send(err);
+                } else {
+                    User.find({}, function(err, user) {
+                        if (err) throw err;
+                        if (verifiedJwt.body.role != 'user') {
+                            res.json(user);
+                        } else {
+                            return res.status(403).send('YOU ARE FORBIDDEN!');
+                        }
+                    });
+                }
+            });
+        } else {
+            return (err);
+        }
+    });
+
+// Router update data user
+
+
+// Router Login    
 router.post('/authenticate', function(req, res){
     User.findOne({
         email: req.body.email
@@ -650,6 +680,7 @@ router.post('/authenticate', function(req, res){
     });
 });
 
+// Router Verifikasi expired token
 router.get('/verify-token', function(req, res){
     var token = req.headers.token;
     if (token) {
