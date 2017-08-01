@@ -658,7 +658,7 @@ router.get('/verify-token', function(req, res){
                 res.send(err);
             } else {
                 if (verifiedJwt.body.exp > Math.floor(Date.now()/1000)){
-                    if ((verifiedJwt.body.exp-Math.floor(Date.now()/1000)) <= 10) {
+                    if ((verifiedJwt.body.exp-Math.floor(Date.now()/1000)) <= 30) {
                         var newToken = getToken(verifiedJwt.body, signingKey);
                         res.json({ newToken : newToken });
                     } else {
@@ -684,7 +684,7 @@ function getToken(user, secretKey) {
         _id: user._id,
     };
     var jwt = nJwt.create(claims, secretKey);
-    jwt.setExpiration(Date.now() + (30*1000)); //(second * minute * 1000) in milisecond
+    jwt.setExpiration(Date.now() + (60*1000)); //(second * minute * 1000) in milisecond
     var token = jwt.compact();
     return token;
 }
