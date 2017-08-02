@@ -613,14 +613,14 @@ router.route('/usermanagement/signup')
                 username: req.body.username,
                 password: req.body.password,
                 role: req.body.role
-            })
+            });
 
-            newUser.save(function(err){
+            newUser.save(function(err, newUser){
                 if(err){
                     return res.status(409)
                         .send('Username already exists!')
                 }
-                res.send(req.body.username + ' created!')
+                res.send(newUser)
             });
         }
     //} else {
@@ -663,16 +663,22 @@ router.route('/usermanagement/account-data')
 //             }
 //         })
 //     })
+
 //     .put(function(req, res) {
-//         User.findByIdAndUpdate(req.params.id, function(req, user){
+//         User.findById(req.params.id, function(req, user){
 //             if(!req.body.email || !req.body.nama || !req.body.password || !req.body.role) {
 //             res.status(209)
 //                 .send('Please insert the user data!');
 //             } else {
-//                 return { $set: req.body};
+//                 var updateUser = new User({
+//                     username: req.body.username,
+//                     password: req.body.password,
+//                     role: req.body.role
+//                 })
+                
 //             }
-
-//         },{ new: true }, function(err, user){})
+//         //},{ new: true }, function(err, user){})
+//         })
 //     })
 
 // Router Delete user
@@ -693,7 +699,7 @@ router.route('/usermanagement/delete/:id')
 // Router Login    
 router.post('/authenticate', function(req, res){
     User.findOne({
-        email: req.body.email
+        username: req.body.username
     }, function(err, user){
         if(err) throw err;
 
@@ -723,7 +729,7 @@ router.get('/verify-token', function(req, res){
                 res.send(err);
             } else {
                 if (verifiedJwt.body.exp > Math.floor(Date.now()/1000)){
-                    if ((verifiedJwt.body.exp-Math.floor(Date.now()/1000)) <= 30) {
+                    if ((verifiedJwt.body.exp-Math.floor(Date.now()/1000)) <= 60*60*2) {
                         var newToken = getToken(verifiedJwt.body, signingKey);
                         res.json({ newToken : newToken });
                     } else {
@@ -749,7 +755,7 @@ function getToken(user, secretKey) {
         _id: user._id,
     };
     var jwt = nJwt.create(claims, secretKey);
-    jwt.setExpiration(Date.now() + (60*1000)); //(second * minute * 1000) in milisecond
+    jwt.setExpiration(Date.now() + (60*60*10*1000)); //(second * minute * 1000) in milisecond
     var token = jwt.compact();
     return token;
 }
