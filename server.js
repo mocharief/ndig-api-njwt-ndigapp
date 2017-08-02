@@ -605,13 +605,12 @@ router.route('/usermanagement/signup')
     // Router Signup
     .post(function(req, res) {
     //if (port === corsOptions.port){
-        if(!req.body.email || !req.body.nama || !req.body.password || !req.body.role){
+        if(!req.body.username || !req.body.password || !req.body.role){
             res.status(209)
                 .send('Please insert the user data!');
         } else {
             var newUser = new User({
-                email: req.body.email,
-                nama: req.body.nama,
+                username: req.body.username,
                 password: req.body.password,
                 role: req.body.role
             })
@@ -619,9 +618,9 @@ router.route('/usermanagement/signup')
             newUser.save(function(err){
                 if(err){
                     return res.status(409)
-                        .send('Email or name already exists!')
+                        .send('Username already exists!')
                 }
-                res.send(req.body.nama + ' created!')
+                res.send(req.body.username + ' created!')
             });
         }
     //} else {
@@ -654,7 +653,42 @@ router.route('/usermanagement/account-data')
     });
 
 // Router update data user
+// router.route('/usermanagement/update/:id')
+//     .get(function(req, res){
+//         User.findById(req.params.id, function(err,user){
+//             if(err){
+//                 res.send(err);
+//             } else {
+//                 res.json(user);
+//             }
+//         })
+//     })
+//     .put(function(req, res) {
+//         User.findByIdAndUpdate(req.params.id, function(req, user){
+//             if(!req.body.email || !req.body.nama || !req.body.password || !req.body.role) {
+//             res.status(209)
+//                 .send('Please insert the user data!');
+//             } else {
+//                 return { $set: req.body};
+//             }
 
+//         },{ new: true }, function(err, user){})
+//     })
+
+// Router Delete user
+router.route('/usermanagement/delete/:id')
+        .delete(function(req, res){
+        User.findByIdAndRemove(req.params.id, function(err,user){
+            if(err){
+                res.send(err);
+            } else {
+                res.json({
+                    msg: 'Account' + user.username + 'successfully deleted',
+                    id: user.id
+                });
+            }
+        })
+    })
 
 // Router Login    
 router.post('/authenticate', function(req, res){
@@ -709,8 +743,8 @@ router.get('/verify-token', function(req, res){
 function getToken(user, secretKey) {
     var claims = {
         iss: "NDIG-DIAS",
-        sub: user.nama,
-        nama: user.nama,
+        sub: user.username,
+        username: user.username,
         role: user.role,
         _id: user._id,
     };
