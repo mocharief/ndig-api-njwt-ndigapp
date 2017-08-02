@@ -620,7 +620,7 @@ router.route('/usermanagement/signup')
                     return res.status(409)
                         .send('Username already exists!')
                 }
-                res.send(newUser)
+                res.send(newUser.username + ' created!')
             });
         }
     //} else {
@@ -653,33 +653,41 @@ router.route('/usermanagement/account-data')
     });
 
 // Router update data user
-// router.route('/usermanagement/update/:id')
-//     .get(function(req, res){
-//         User.findById(req.params.id, function(err,user){
-//             if(err){
-//                 res.send(err);
-//             } else {
-//                 res.json(user);
-//             }
-//         })
-//     })
+router.route('/usermanagement/update/:id')
+    .get(function(req, res){
+        User.findById(req.params.id, function(err,user){
+            if(err){
+                res.send(err);
+            } else {
+                res.json(user);
+            }
+        })
+    })
+    
+    .put(function(req, res) {
+        User.findById(req.params.id, function(err, user){
+            console.log(req.params.id);
+            if (err) {
+                res.status(500).send(err);
+            } else {
+                if(!req.body.username || !req.body.role || !req.body.password ) {
+                    res.status(209)
+                    .send('Please insert the user data!');
+                } else {
+                    user.username = req.body.username;
+                    user.password = req.body.password;
+                    user.role = req.body.role;
 
-//     .put(function(req, res) {
-//         User.findById(req.params.id, function(req, user){
-//             if(!req.body.email || !req.body.nama || !req.body.password || !req.body.role) {
-//             res.status(209)
-//                 .send('Please insert the user data!');
-//             } else {
-//                 var updateUser = new User({
-//                     username: req.body.username,
-//                     password: req.body.password,
-//                     role: req.body.role
-//                 })
-                
-//             }
-//         //},{ new: true }, function(err, user){})
-//         })
-//     })
+                    user.save(function(err, user){
+                        if(err){
+                            return err;
+                        }
+                        res.send('Succesfully updated');
+                    });
+                }
+            }
+        })
+    })
 
 // Router Delete user
 router.route('/usermanagement/delete/:id')
