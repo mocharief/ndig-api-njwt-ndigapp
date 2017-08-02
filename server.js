@@ -17,7 +17,7 @@ var util = require('./util.js');
 
 var mongoose    = require('mongoose');
 // mongoose.connect('mongodb://localhost:27017/pesanIntelDB'); // connect to our database
-mongoose.connect('mongodb://localhost:27017/dias'); // connect to our database
+mongoose.connect('mongodb://192.168.1.241:27017/dias'); // connect to our database
 // mongoose.connect('mongodb://192.168.1.8:27017/skmchatbot_message'); // connect to our database
 
 
@@ -366,7 +366,7 @@ router.route('/analysedinfo/filter/:paramwaktu/source/:paramsource')
 
 
 // A3. CATEGORY - FILTER - SOURCE 
-// paramCat = lihat documentCategories.json
+// paramCat = lihat documentCategories.json atau category_summary.ods
 // paramLev = [low, med, high]
 
 // router.route('/analysedinfo/category/:paramcat')
@@ -416,7 +416,6 @@ router.route('/analysedinfo/category/:paramcat/filter/:paramwaktu/source/:params
 
 
 // A4. THREATLEVEL - FILTER - SOURCE 
-// paramCat = lihat documentCategories.json
 // paramLev = [low, med, high]
 
 // router.route('/analysedinfo/threatlevel/:paramlev')
@@ -453,6 +452,106 @@ router.route('/analysedinfo/threatlevel/:paramlev/filter/:paramwaktu/source/:par
             AnalysedInfo.find({
                 $and: [
                       {'threatWarning': req.params.paramlev},
+                      {'dataSource': req.params.paramsource},
+                      {'eventDateDate': {$gte: thePrevDate}} //sama dengan date.month bulan ini
+                ]
+            }, function (err, info) {
+                if (err)
+                    res.send(err);
+                res.json(info);
+            });
+        }
+    });
+
+
+// A5. SUBCATEGORY1 - FILTER - SOURCE 
+// paramSubCat1 = lihat documentCategories.json atau category_summary.ods
+// paramLev = [low, med, high]
+
+// router.route('/analysedinfo/subcategory1/:paramcat')
+//     .get(function(req, res) {
+//         AnalysedInfo.find({ 'categorySub1': req.params.paramcat}, function (err, info) {
+//             if (err)
+//                 res.send(err);
+//             res.json(info);
+//         });
+//     });
+
+router.route('/analysedinfo/subcategory1/:paramcat/filter/:paramwaktu/source/:paramsource')
+    .get(function(req, res) {
+        var nPrev;
+        if (req.params.paramwaktu == "lastday"){nPrev=1};
+        if (req.params.paramwaktu == "lastweek"){nPrev=7};
+        if (req.params.paramwaktu == "lastmonth"){nPrev=30};
+        if (req.params.paramwaktu == "lastyear"){nPrev=365};
+        var thePrevDate = util.getNPrevDate(nPrev);
+        
+        if (req.params.paramsource == "all"){
+            AnalysedInfo.find({
+                $and: [
+                      {'categorySub1': req.params.paramcat},
+                      {'eventDateDate': {$gte: thePrevDate}} //sama dengan date.month bulan ini
+                ]
+            }, function (err, info) {
+                if (err)
+                    res.send(err);
+                res.json(info);
+            });
+        } 
+        else {
+            AnalysedInfo.find({
+                $and: [
+                      {'categorySub1': req.params.paramcat},
+                      {'dataSource': req.params.paramsource},
+                      {'eventDateDate': {$gte: thePrevDate}} //sama dengan date.month bulan ini
+                ]
+            }, function (err, info) {
+                if (err)
+                    res.send(err);
+                res.json(info);
+            });
+        }
+    });
+
+
+// A6. SUBCATEGORY2 - FILTER - SOURCE 
+// paramSubCat2 = lihat documentCategories.json atau category_summary.ods
+// paramLev = [low, med, high]
+
+// router.route('/analysedinfo/subcategory2/:paramcat')
+//     .get(function(req, res) {
+//         AnalysedInfo.find({ 'categoryMain': req.params.paramcat}, function (err, info) {
+//             if (err)
+//                 res.send(err);
+//             res.json(info);
+//         });
+//     });
+
+router.route('/analysedinfo/subcategory2/:paramcat/filter/:paramwaktu/source/:paramsource')
+    .get(function(req, res) {
+        var nPrev;
+        if (req.params.paramwaktu == "lastday"){nPrev=1};
+        if (req.params.paramwaktu == "lastweek"){nPrev=7};
+        if (req.params.paramwaktu == "lastmonth"){nPrev=30};
+        if (req.params.paramwaktu == "lastyear"){nPrev=365};
+        var thePrevDate = util.getNPrevDate(nPrev);
+        
+        if (req.params.paramsource == "all"){
+            AnalysedInfo.find({
+                $and: [
+                      {'categorySub2': req.params.paramcat},
+                      {'eventDateDate': {$gte: thePrevDate}} //sama dengan date.month bulan ini
+                ]
+            }, function (err, info) {
+                if (err)
+                    res.send(err);
+                res.json(info);
+            });
+        } 
+        else {
+            AnalysedInfo.find({
+                $and: [
+                      {'categorySub2': req.params.paramcat},
                       {'dataSource': req.params.paramsource},
                       {'eventDateDate': {$gte: thePrevDate}} //sama dengan date.month bulan ini
                 ]
