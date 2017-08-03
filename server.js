@@ -631,12 +631,13 @@ router.route('/usermanagement/signup')
 
 // Router get data user dari mongoDB
 router.route('/usermanagement/account-data')
-    .get(function(req,res) {
-        var token = req.headers.token;
+    .get(function(req, res) {
+        var split = req.headers.token.split(' ');
+        var token = split[1];
         if (token) {
             nJwt.verify(token, signingKey, function(err, verifiedJwt){
                 if (err){
-                    res.send(err);
+                    res.status(401).send(err);
                 } else {
                     User.find({}, function(err, user) {
                         if (err) throw err;
@@ -649,26 +650,35 @@ router.route('/usermanagement/account-data')
                 }
             });
         } else {
-            return (err);
+            res.status(401).send(err);
         }
     });
 
 // Router update data user
 router.route('/usermanagement/update/:id')
     .get(function(req, res){
+        var split = req.headers.token.split(' ');
+        var token = split[1];
+        if (token) {
         User.findById(req.params.id, function(err,user){
             if(err){
-                res.send(err);
+                res.status(401).send(err);
             } else {
                 res.json(user);
             }
         })
+        } else {
+            res.status(401).send(err);
+        }
     })
     
     .put(function(req, res) {
+        var split = req.headers.token.split(' ');
+        var token = split[1];
+        if (token) {
         User.findById(req.params.id, function(err, user){
             if (err) {
-                res.status(500).send(err);
+                res.status(401).send(err);
             } else {
                 if(!req.body.username || !req.body.role || !req.body.password ) {
                     res.status(209)
@@ -687,14 +697,20 @@ router.route('/usermanagement/update/:id')
                 }
             }
         })
+        } else {
+            res.status(401).send(err);
+        }
     })
 
 // Router Delete user
 router.route('/usermanagement/delete/:id')
         .delete(function(req, res){
+        var split = req.headers.token.split(' ');
+        var token = split[1];
+        if (token) {
         User.findByIdAndRemove(req.params.id, function(err,user){
             if(err){
-                res.send(err);
+                res.status(401).send(err);
             } else {
                 res.json({
                     msg: 'Account ' + user.username + ' successfully deleted',
@@ -702,6 +718,9 @@ router.route('/usermanagement/delete/:id')
                 });
             }
         })
+        } else {
+            res.status(401).send(err);
+        }
     })
 
 // Router Login    
@@ -730,11 +749,12 @@ router.post('/authenticate', function(req, res){
 
 // Router Verifikasi expired token
 router.get('/verify-token', function(req, res){
-    var token = req.headers.token;
+    var split = req.headers.token.split(' ');
+    var token = split[1];
     if (token) {
         nJwt.verify(token, signingKey, function(err,verifiedJwt) {
             if (err) {
-                res.send(err);
+                res.status(401).send(err);
             } else {
                 if (verifiedJwt.body.exp > Math.floor(Date.now()/1000)){
                     if ((verifiedJwt.body.exp-Math.floor(Date.now()/1000)) <= 60*60*2) {
@@ -749,7 +769,7 @@ router.get('/verify-token', function(req, res){
             }
         });
     } else {
-        return (err);
+        res.status(401).send(err);
     }
 });
 
@@ -774,91 +794,121 @@ function getToken(user, secretKey) {
 // ----------------------------ROlE MANAGEMENT----------------------------------
 
 router.post('/rolemanagement/create', function(req,res) {
-    if(!req.body.rolename) {
-        res.status(209)
-            .send('Please Insert Data')
-    } else {
-        var newRole = new Roles({
-            rolename: req.body.rolename,
-            viewDashboard: req.body.viewDashboard,
-            vewCategory: req.body.viewCategory,
-            viewThreat: req.body.viewThreat,
-            viewIntel: req.body.viewIntel,
-            viewNews: req.body.viewNews,
-            viewUserManage: req.body.viewUserManage,
-            viewCRUD: req.body.viewCRUD
-        });
+    var split = req.headers.token.split(' ');
+    var token = split[1];
+    if (token) {
+        if(!req.body.rolename) {
+            res.status(209)
+                .send('Please Insert Data')
+        } else {
+            var newRole = new Roles({
+                rolename: req.body.rolename,
+                viewDashboard: req.body.viewDashboard,
+                vewCategory: req.body.viewCategory,
+                viewThreat: req.body.viewThreat,
+                viewIntel: req.body.viewIntel,
+                viewNews: req.body.viewNews,
+                viewUserManage: req.body.viewUserManage,
+                viewCRUD: req.body.viewCRUD
+            });
 
-        newRole.save(function(err, newRole) {
-            if(err) {
-                return err;
-            }
-            res.send(newRole)
-        });
+            newRole.save(function(err, newRole) {
+                if(err) {
+                    return err;
+                }
+                res.send(newRole)
+            });
+        }
+    } else {
+        res.status(401).send(err);
     }
 })
 
 router.get('/rolemanagement/role-data', function(req, res) {
-    Roles.find({}, function(err, role){
-        if (err){
-            res.status(400).send(err);
-        } else {
-            res.json(role);
-        }
-    })
+    var split = req.headers.token.split(' ');
+    var token = split[1];
+    if (token) {
+        Roles.find({}, function(err, role){
+            if (err){
+                res.status(400).send(err);
+            } else {
+                res.json(role);
+            }
+        })
+    } else {
+        res.status(401).send(err);
+    }
 })
 
 router.route('/rolemanagement/update/:id')
     .get(function(req,res) {
-        Roles.findById(req.params.id, function(err, roles){
-            if(err){
-                res.status(400).send(err);
-            } else {
-                res.json(roles);
-            }
-        })
+        var split = req.headers.token.split(' ');
+        var token = split[1];
+        if (token) {
+            Roles.findById(req.params.id, function(err, roles){
+                if(err){
+                    res.status(400).send(err);
+                } else {
+                    res.json(roles);
+                }
+            })
+        } else {
+            res.status(401).send(err);
+        }
     })
 
     .put(function(req, res) {
-        Roles.findById(req.params.id, function(err, roles) {
-            if(err) {
-                res.status(400).send(err);
-            } else {
-                if(!req.body.rolename) {
-                    res.status(209)
-                    .send('Please insert the user data!');
+        var split = req.headers.token.split(' ');
+        var token = split[1];
+        if (token) {
+            Roles.findById(req.params.id, function(err, roles) {
+                if(err) {
+                    res.status(400).send(err);
                 } else {
-                    roles.rolename = req.body.rolename,
-                    roles.viewDashboard = req.body.viewDashboard,
-                    roles.vewCategory = req.body.viewCategory,
-                    roles.viewThreat = req.body.viewThreat,
-                    roles.viewIntel = req.body.viewIntel,
-                    roles.viewNews = req.body.viewNews,
-                    roles.viewUserManage = req.body.viewUserManage,
-                    roles.viewCRUD = req.body.viewCRUD
-                    
-                    roles.save(function(err, roles){
-                        if(err){
-                            return err;
-                        }
-                        res.send(roles.rolename + ' succesfully updated');
-                    });
+                    if(!req.body.rolename) {
+                        res.status(209)
+                        .send('Please insert the user data!');
+                    } else {
+                        roles.rolename = req.body.rolename,
+                        roles.viewDashboard = req.body.viewDashboard,
+                        roles.vewCategory = req.body.viewCategory,
+                        roles.viewThreat = req.body.viewThreat,
+                        roles.viewIntel = req.body.viewIntel,
+                        roles.viewNews = req.body.viewNews,
+                        roles.viewUserManage = req.body.viewUserManage,
+                        roles.viewCRUD = req.body.viewCRUD
+                        
+                        roles.save(function(err, roles){
+                            if(err){
+                                return err;
+                            }
+                            res.send(roles.rolename + ' succesfully updated');
+                        });
+                    }
                 }
-            }
-        })
+            })
+        } else {
+            res.status(401).send(err);
+        }
     })
 
 router.delete('/rolemanagement/delete/:id', function(req, res) {
-    Roles.findByIdAndRemove(req.params.id, function(err, roles) {
-        if(err || !roles) {
-            res.status(400).send(err);
-        } else {
-            res.json({
-                msg: 'Role ' + roles.rolename + ' successfully deleted',
-                id: roles.id
-            })
-        }
-    })
+    var split = req.headers.token.split(' ');
+    var token = split[1];
+    if (token) {
+        Roles.findByIdAndRemove(req.params.id, function(err, roles) {
+            if(err || !roles) {
+                res.status(400).send(err);
+            } else {
+                res.json({
+                    msg: 'Role ' + roles.rolename + ' successfully deleted',
+                    id: roles.id
+                })
+            }
+        })
+    } else {
+        res.status(401).send(err);
+    }
 })
 
 // =============================================================================
