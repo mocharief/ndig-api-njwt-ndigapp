@@ -8,6 +8,7 @@ var app         = express();                 // define our app using express
 var bodyParser  = require('body-parser');
 var Pesan       = require('./app/models/pesan');
 var Twitter     = require('./app/models/twitter');
+var Roles        = require('./app/models/roles')
 
 var AnalysedInfo    = require('./app/models/analysedinfo');
 var summ = require('./summary.js')(AnalysedInfo);
@@ -666,7 +667,6 @@ router.route('/usermanagement/update/:id')
     
     .put(function(req, res) {
         User.findById(req.params.id, function(err, user){
-            console.log(req.params.id);
             if (err) {
                 res.status(500).send(err);
             } else {
@@ -697,7 +697,7 @@ router.route('/usermanagement/delete/:id')
                 res.send(err);
             } else {
                 res.json({
-                    msg: 'Account' + user.username + 'successfully deleted',
+                    msg: 'Account ' + user.username + ' successfully deleted',
                     id: user.id
                 });
             }
@@ -767,6 +767,99 @@ function getToken(user, secretKey) {
     var token = jwt.compact();
     return token;
 }
+
+// ----------------------------ROlE MANAGEMENT----------------------------------
+// ----------------------------ROlE MANAGEMENT----------------------------------
+// ----------------------------ROlE MANAGEMENT----------------------------------
+// ----------------------------ROlE MANAGEMENT----------------------------------
+
+router.post('/rolemanagement/create', function(req,res) {
+    if(!req.body.rolename) {
+        res.status(209)
+            .send('Please Insert Data')
+    } else {
+        var newRole = new Roles({
+            rolename: req.body.rolename,
+            viewDashboard: req.body.viewDashboard,
+            vewCategory: req.body.viewCategory,
+            viewThreat: req.body.viewThreat,
+            viewIntel: req.body.viewIntel,
+            viewNews: req.body.viewNews,
+            viewUserManage: req.body.viewUserManage,
+            viewCRUD: req.body.viewCRUD
+        });
+
+        newRole.save(function(err, newRole) {
+            if(err) {
+                return err;
+            }
+            res.send(newRole)
+        });
+    }
+})
+
+router.get('/rolemanagement/role-data', function(req, res) {
+    Roles.find({}, function(err, role){
+        if (err){
+            res.status(400).send(err);
+        } else {
+            res.json(role);
+        }
+    })
+})
+
+router.route('/rolemanagement/update/:id')
+    .get(function(req,res) {
+        Roles.findById(req.params.id, function(err, roles){
+            if(err){
+                res.status(400).send(err);
+            } else {
+                res.json(roles);
+            }
+        })
+    })
+
+    .put(function(req, res) {
+        Roles.findById(req.params.id, function(err, roles) {
+            if(err) {
+                res.status(400).send(err);
+            } else {
+                if(!req.body.rolename) {
+                    res.status(209)
+                    .send('Please insert the user data!');
+                } else {
+                    roles.rolename = req.body.rolename,
+                    roles.viewDashboard = req.body.viewDashboard,
+                    roles.vewCategory = req.body.viewCategory,
+                    roles.viewThreat = req.body.viewThreat,
+                    roles.viewIntel = req.body.viewIntel,
+                    roles.viewNews = req.body.viewNews,
+                    roles.viewUserManage = req.body.viewUserManage,
+                    roles.viewCRUD = req.body.viewCRUD
+                    
+                    roles.save(function(err, roles){
+                        if(err){
+                            return err;
+                        }
+                        res.send(roles.rolename + ' succesfully updated');
+                    });
+                }
+            }
+        })
+    })
+
+router.delete('/rolemanagement/delete/:id', function(req, res) {
+    Roles.findByIdAndRemove(req.params.id, function(err, roles) {
+        if(err || !roles) {
+            res.status(400).send(err);
+        } else {
+            res.json({
+                msg: 'Role ' + roles.rolename + ' successfully deleted',
+                id: roles.id
+            })
+        }
+    })
+})
 
 // =============================================================================
 // all of our routes will be prefixed with /api
