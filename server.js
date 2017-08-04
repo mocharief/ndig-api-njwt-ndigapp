@@ -895,15 +895,20 @@ router.route('/rolemanagement/update/:id')
 router.delete('/rolemanagement/delete/:id', function(req, res) {
     var split = req.headers.token.split(' ');
     var token = split[1];
+    var id_role = req.params.id;
     if (token) {
-        Roles.findByIdAndRemove(req.params.id, function(err, roles) {
-            if(err || !roles) {
-                res.status(400).send(err);
-            } else {
-                res.json({
-                    msg: 'Role ' + roles.rolename + ' successfully deleted',
-                    id: roles.id
+        Roles.findById(id_role, function (err, role){
+            if(role != '') {
+                User.find({role: id_role}, function(err, user) {
+                if(user != '') {           
+                    res.status(400).send('Failed to delete this role');
+                    } else {
+                        role.remove();
+                        res.send('Role ' + role.rolename + ' deleted');
+                    }
                 })
+            } else {
+                res.status(400).send('Role not found');
             }
         })
     } else {
@@ -922,3 +927,15 @@ console.log(" ");
 console.log("===========================================================");
 console.log("initializing National Defense Information Grid API service");
 console.log("gopal's magic happens on port " + port);
+
+// var roles = '5983f0ff557336eb0f000001';
+
+// // User.find({role: roles}, function(err, role) {
+// //     if (err) return err;
+// //     else console.log(role);
+// // })
+
+// Roles.findById(roles, function(err, role){
+//     if (err) return err;
+//     else console.log(role);
+// })
