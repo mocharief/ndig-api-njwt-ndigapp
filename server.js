@@ -63,21 +63,26 @@ var router = express.Router();              // get an instance of the express Ro
 
 // middleware to use for all requests
 router.use(function(req, res, next) {
-    // if(req.path === ('/authenticate')) {
-    //     next()
-    // } else {
-    //     var split = req.headers.token.split(' ');
-    //     var token = split[1];
-    //     if(token) {
-    //         nJwt.verify(token, signingKey, function(err, decoded) {
-    //             if (err) {
-    //                 return res.json({ success: false, message: 'Failed to authenticate token.' });
-    //             } else {
-    //                 next();
-    //             }
-    //         })
-    //     }        
-    // }
+    if(req.path !== ('/authenticate')) {
+        var split = req.headers.token.split(' ');
+        var token = split[1];
+        console.log(token);
+        if(token) {
+            nJwt.verify(token, signingKey, function(err, decoded) {
+                if (err) {
+                    return res.json({ success: false, message: 'Failed to authenticate token.' });
+                } else {
+                    req.decoded = decoded;
+                    console.log(token);
+                }
+            })
+        } else {
+            return res.status(403).send({ 
+            success: false, 
+            message: 'No token provided.'
+            }); 
+        }       
+    }
     // do logging
     console.log('---Something is happening---', req.params);
     next(); // make sure we go to the next routes and don't stop here
@@ -123,6 +128,7 @@ router.route('/rawpesans')
                 res.send(err);
             // Encrypt
             var chipertext = CryptoJS.AES.encrypt(JSON.stringify(pesans), encryptpass);
+            res.setHeader('securedata', true);
             res.send(chipertext.toString());
         });
     });
@@ -138,6 +144,7 @@ router.route('/rawpesans/dari/:nama')
                 res.send(err);
             // Encrypt
             var chipertext = CryptoJS.AES.encrypt(JSON.stringify(pesan), encryptpass);        
+            res.setHeader('securedata', true);
             res.send(chipertext.toString());
         });
     })
@@ -150,6 +157,7 @@ router.route('/rawpesans/type/:tipe')
                 res.send(err);
             // Encrypt
             var chipertext = CryptoJS.AES.encrypt(JSON.stringify(pesans), encryptpass);
+            res.setHeader('securedata', true);
             res.send(chipertext.toString());
         });
     })
@@ -162,6 +170,7 @@ router.route('/rawpesans/:pesan_id')
                 res.send(err);
             // Encrypt
             var chipertext = CryptoJS.AES.encrypt(JSON.stringify(pesan), encryptpass);
+            res.setHeader('securedata', true);
             res.send(chipertext.toString());
         });
     })
@@ -225,6 +234,7 @@ router.route('/rawpesans/filter/:paramwaktu')
                 res.send(err);
             // Encrypt
             var chipertext = CryptoJS.AES.encrypt(JSON.stringify(pesan), encryptpass);
+            res.setHeader('securedata', true);
             res.send(chipertext.toString());
         });
     })
@@ -237,6 +247,7 @@ router.route('/rawpesans/isi/:pesan')
                 res.send(err);
             // Encrypt
             var chipertext = CryptoJS.AES.encrypt(JSON.stringify(pesan), encryptpass);
+            res.setHeader('securedata', true);
             res.send(chipertext.toString());
         });
     })
@@ -310,6 +321,7 @@ router.route('/rawtwitters')
                 res.send(err);
             // Encrypt
             var chipertext = CryptoJS.AES.encrypt(JSON.stringify(twit), encryptpass);
+            res.setHeader('securedata', true);
             res.send(chipertext.toString());
         });
     });
@@ -376,6 +388,7 @@ router.route('/analysedinfo')
                 res.send(err);
             // Encrypt
             var chipertext = CryptoJS.AES.encrypt(JSON.stringify(news), encryptpass);
+            res.setHeader('securedata', true);
             res.send(chipertext.toString());
         });
     });
@@ -399,6 +412,7 @@ router.route('/analysedinfo/filter/:paramwaktu/source/:paramsource')
                     res.send(err);
                 // Encrypt
                 var chipertext = CryptoJS.AES.encrypt(JSON.stringify(info), encryptpass);
+                res.setHeader('securedata', true);
                 res.send(chipertext.toString());
             });
         } 
@@ -413,6 +427,7 @@ router.route('/analysedinfo/filter/:paramwaktu/source/:paramsource')
                     res.send(err);
                 // Encrypt
                 var chipertext = CryptoJS.AES.encrypt(JSON.stringify(info), encryptpass);
+                res.setHeader('securedata', true);
                 res.send(chipertext.toString());
             });
         }
@@ -452,6 +467,7 @@ router.route('/analysedinfo/category/:paramcat/filter/:paramwaktu/source/:params
                     res.send(err);
                 // Encrypt
                 var chipertext = CryptoJS.AES.encrypt(JSON.stringify(info), encryptpass);
+                res.setHeader('securedata', true);
                 res.send(chipertext.toString());
             });
         } 
@@ -467,6 +483,7 @@ router.route('/analysedinfo/category/:paramcat/filter/:paramwaktu/source/:params
                     res.send(err);
                 // Encrypt
                 var chipertext = CryptoJS.AES.encrypt(JSON.stringify(info), encryptpass);
+                res.setHeader('securedata', true);
                 res.send(chipertext.toString());
             });
         }
@@ -506,6 +523,7 @@ router.route('/analysedinfo/threatlevel/:paramlev/filter/:paramwaktu/source/:par
                     res.send(err);
                 // Encrypt
                 var chipertext = CryptoJS.AES.encrypt(JSON.stringify(info), encryptpass);
+                res.setHeader('securedata', true);
                 res.send(chipertext.toString());
             });
         } 
@@ -521,6 +539,7 @@ router.route('/analysedinfo/threatlevel/:paramlev/filter/:paramwaktu/source/:par
                     res.send(err);
                 // Encrypt
                 var chipertext = CryptoJS.AES.encrypt(JSON.stringify(info), encryptpass);
+                res.setHeader('securedata', true);
                 res.send(chipertext.toString());
             });
         }
@@ -541,6 +560,7 @@ router.route('/threatsummary')
         summ.getProvinceSummary(function(summary) {
             // Encrypt
             var chipertext = CryptoJS.AES.encrypt(JSON.stringify(summary), encryptpass);
+            res.setHeader('securedata', true);
             res.send(chipertext.toString());
         });
     });
@@ -552,6 +572,7 @@ router.route('/categorysummary')
         summ.getCategorySummary(function(summary) {
             // Encrypt
             var chipertext = CryptoJS.AES.encrypt(JSON.stringify(summary), encryptpass);
+            res.setHeader('securedata', true);
             res.send(chipertext.toString());
         });
     });
@@ -573,6 +594,7 @@ router.route('/piechart/filter/:paramwaktu/source/:paramsource')
         summ.getPiechartSummary(function(summary) {
             // Encrypt
             var chipertext = CryptoJS.AES.encrypt(JSON.stringify(summary), encryptpass);
+            res.setHeader('securedata', true);
             res.send(chipertext.toString());
         }, req.params.paramwaktu, req.params.paramsource);
     });
@@ -587,6 +609,7 @@ router.route('/piechart/category/:paramcat/filter/:paramwaktu/source/:paramsourc
         summ.getPiechartCategorySummary(function(summary) {
             // Encrypt
             var chipertext = CryptoJS.AES.encrypt(JSON.stringify(summary), encryptpass);
+            res.setHeader('securedata', true);
             res.send(chipertext.toString());
         }, req.params.paramcat, req.params.paramwaktu, req.params.paramsource);
     });
@@ -602,6 +625,7 @@ router.route('/piechart/threatlevel/:paramlev/filter/:paramwaktu/source/:paramso
         summ.getPiechartThreatSummary(function(summary) {
             // Encrypt
             var chipertext = CryptoJS.AES.encrypt(JSON.stringify(summary), encryptpass);
+            res.setHeader('securedata', true);
             res.send(chipertext.toString());
         }, req.params.paramlev, req.params.paramwaktu, req.params.paramsource);
     });
@@ -623,6 +647,7 @@ router.route('/linechart/filter/:paramwaktu/source/:paramsource')
         summ.getLinechartSummary(function(summary) {
             // Encrypt
             var chipertext = CryptoJS.AES.encrypt(JSON.stringify(summary), encryptpass);
+            res.setHeader('securedata', true);
             res.send(chipertext.toString());
         }, req.params.paramwaktu, req.params.paramsource);
     });
@@ -637,6 +662,7 @@ router.route('/linechart/category/:paramcat/filter/:paramwaktu/source/:paramsour
         summ.getLinechartCategorySummary(function(summary) {
             // Encrypt
             var chipertext = CryptoJS.AES.encrypt(JSON.stringify(summary), encryptpass);
+            res.setHeader('securedata', true);
             res.send(chipertext.toString());
         }, req.params.paramcat, req.params.paramwaktu, req.params.paramsource);
     });
@@ -652,6 +678,7 @@ router.route('/linechart/threatlevel/:paramlev/filter/:paramwaktu/source/:params
         summ.getLinechartThreatSummary(function(summary) {
             // Encrypt
             var chipertext = CryptoJS.AES.encrypt(JSON.stringify(summary), encryptpass);
+            res.setHeader('securedata', true);
             res.send(chipertext.toString());
         }, req.params.paramlev, req.params.paramwaktu, req.params.paramsource);
     });
@@ -703,6 +730,7 @@ router.route('/usermanagement/account-data')
                         if (verifiedJwt.body.role != 'user') {
                             // Encrypt
                             var chipertext = CryptoJS.AES.encrypt(JSON.stringify(user), encryptpass);
+                            res.setHeader('securedata', true);
                             res.send(chipertext.toString());
                         } else {
                             return res.status(403).send('YOU ARE FORBIDDEN!');
@@ -718,27 +746,28 @@ router.route('/usermanagement/account-data')
 // Router update data user
 router.route('/usermanagement/update/:id')
     .get(function(req, res){
-        var split = req.headers.token.split(' ');
-        var token = split[1];
-        if (token) {
+        // var split = req.headers.token.split(' ');
+        // var token = split[1];
+        // if (token) {
         User.findById(req.params.id, function(err,user){
             if(err){
                 res.status(401).send(err);
             } else {
                 // Encrypt
                 var chipertext = CryptoJS.AES.encrypt(JSON.stringify(user), encryptpass);
+                res.setHeader('securedata', true);
                 res.send(chipertext.toString());
             }
         })
-        } else {
-            res.status(401).send(err);
-        }
+        // } else {
+        //     res.status(401).send(err);
+        // }
     })
     
     .put(function(req, res) {
-        var split = req.headers.token.split(' ');
-        var token = split[1];
-        if (token) {
+        // var split = req.headers.token.split(' ');
+        // var token = split[1];
+        // if (token) {
         User.findById(req.params.id, function(err, user){
             if (err) {
                 res.status(401).send(err);
@@ -760,17 +789,17 @@ router.route('/usermanagement/update/:id')
                 }
             }
         })
-        } else {
-            res.status(401).send(err);
-        }
+        // } else {
+        //     res.status(401).send(err);
+        // }
     })
 
 // Router Delete user
 router.route('/usermanagement/delete/:id')
         .delete(function(req, res){
-        var split = req.headers.token.split(' ');
-        var token = split[1];
-        if (token) {
+        // var split = req.headers.token.split(' ');
+        // var token = split[1];
+        // if (token) {
         User.findByIdAndRemove(req.params.id, function(err,user){
             if(err){
                 res.status(401).send(err);
@@ -781,9 +810,9 @@ router.route('/usermanagement/delete/:id')
                 });
             }
         })
-        } else {
-            res.status(401).send(err);
-        }
+        // } else {
+        //     res.status(401).send(err);
+        // }
     })
 
 // Router Login    
@@ -832,7 +861,7 @@ router.get('/verify-token', function(req, res){
             }
         });
     } else {
-        res.status(401).send(err);
+        res.status(401).send('Error Token');
     }
 });
 
@@ -857,9 +886,9 @@ function getToken(user, secretKey) {
 // ----------------------------ROlE MANAGEMENT----------------------------------
 
 router.post('/rolemanagement/create', function(req,res) {
-    var split = req.headers.token.split(' ');
-    var token = split[1];
-    if (token) {
+    // var split = req.headers.token.split(' ');
+    // var token = split[1];
+    // if (token) {
         if(!req.body.rolename) {
             res.status(209)
                 .send('Please Insert Data')
@@ -882,52 +911,54 @@ router.post('/rolemanagement/create', function(req,res) {
                 res.send(newRole)
             });
         }
-    } else {
-        res.status(401).send(err);
-    }
+    // } else {
+    //     res.status(401).send(err);
+    // }
 })
 
 router.get('/rolemanagement/role-data', function(req, res) {
-    var split = req.headers.token.split(' ');
-    var token = split[1];
-    if (token) {
+    // var split = req.headers.token.split(' ');
+    // var token = split[1];
+    // if (token) {
         Roles.find({}, function(err, role){
             if (err){
                 res.status(400).send(err);
             } else {
                 // Encrypt
                 var chipertext = CryptoJS.AES.encrypt(JSON.stringify(role), encryptpass);
+                res.setHeader('securedata', true);
                 res.send(chipertext.toString());
             }
         })
-    } else {
-        res.status(401).send(err);
-    }
+    // } else {
+    //     res.status(401).send(err);
+    // }
 })
 
 router.route('/rolemanagement/update/:id')
     .get(function(req,res) {
-        var split = req.headers.token.split(' ');
-        var token = split[1];
-        if (token) {
+        // var split = req.headers.token.split(' ');
+        // var token = split[1];
+        // if (token) {
             Roles.findById(req.params.id, function(err, roles){
                 if(err){
                     res.status(400).send(err);
                 } else {
                     // Encrypt
                     var chipertext = CryptoJS.AES.encrypt(JSON.stringify(role), encryptpass);
+                    res.setHeader('securedata', true);
                     res.send(chipertext.toString());
                 }
             })
-        } else {
-            res.status(401).send(err);
-        }
+        // } else {
+        //     res.status(401).send(err);
+        // }
     })
 
     .put(function(req, res) {
-        var split = req.headers.token.split(' ');
-        var token = split[1];
-        if (token) {
+        // var split = req.headers.token.split(' ');
+        // var token = split[1];
+        // if (token) {
             Roles.findById(req.params.id, function(err, roles) {
                 if(err) {
                     res.status(400).send(err);
@@ -954,16 +985,16 @@ router.route('/rolemanagement/update/:id')
                     }
                 }
             })
-        } else {
-            res.status(401).send(err);
-        }
+        // } else {
+        //     res.status(401).send(err);
+        // }
     })
 
 router.delete('/rolemanagement/delete/:id', function(req, res) {
-    var split = req.headers.token.split(' ');
-    var token = split[1];
+    // var split = req.headers.token.split(' ');
+    // var token = split[1];
     var id_role = req.params.id;
-    if (token) {
+    // if (token) {
         Roles.findById(id_role, function (err, role){
             if(role != '') {
                 User.find({role: id_role}, function(err, user) {
@@ -978,9 +1009,9 @@ router.delete('/rolemanagement/delete/:id', function(req, res) {
                 res.status(400).send('Role not found');
             }
         })
-    } else {
-        res.status(401).send(err);
-    }
+    // } else {
+    //     res.status(401).send(err);
+    // }
 })
 
 //--------------------------------------TEST ENCRYPT DATA-------------------------------------------
