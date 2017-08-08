@@ -8,13 +8,14 @@ var app         = express();                 // define our app using express
 var bodyParser  = require('body-parser');
 var Pesan       = require('./app/models/pesan');
 var Twitter     = require('./app/models/twitter');
-var Roles        = require('./app/models/roles')
+var Roles       = require('./app/models/roles');
 
-var AnalysedInfo    = require('./app/models/analysedinfo');
-var summ = require('./summary.js')(AnalysedInfo);
-var util = require('./util.js');
-// var News    = require('./app/models/news');
-// var Webpage    = require('./app/models/crawl_webpage');
+var AnalysedInfo= require('./app/models/analysedinfo');
+var summ        = require('./summary.js')(AnalysedInfo);
+var util        = require('./util.js');
+// var News     = require('./app/models/news');
+// var Webpage  = require('./app/models/crawl_webpage');
+var CryptoJS = require('crypto-js'); 
 
 var mongoose    = require('mongoose');
 // mongoose.connect('mongodb://localhost:27017/pesanIntelDB'); // connect to our database
@@ -54,6 +55,7 @@ app.all('/*', function(req, res, next) {
 // GLOBAL VARIABEL
 var port = process.env.PORT || 9099;        // set our port
 var START, END;
+var encryptpass = 'NDIG-DIAS';
 
 // ROUTES FOR OUR API
 // =============================================================================
@@ -61,6 +63,21 @@ var router = express.Router();              // get an instance of the express Ro
 
 // middleware to use for all requests
 router.use(function(req, res, next) {
+    // if(req.path === ('/authenticate')) {
+    //     next()
+    // } else {
+    //     var split = req.headers.token.split(' ');
+    //     var token = split[1];
+    //     if(token) {
+    //         nJwt.verify(token, signingKey, function(err, decoded) {
+    //             if (err) {
+    //                 return res.json({ success: false, message: 'Failed to authenticate token.' });
+    //             } else {
+    //                 next();
+    //             }
+    //         })
+    //     }        
+    // }
     // do logging
     console.log('---Something is happening---', req.params);
     next(); // make sure we go to the next routes and don't stop here
@@ -104,7 +121,9 @@ router.route('/rawpesans')
         Pesan.find(function(err, pesans) {
             if (err)
                 res.send(err);
-            res.json(pesans);
+            // Encrypt
+            var chipertext = CryptoJS.AES.encrypt(JSON.stringify(pesans), encryptpass);
+            res.send(chipertext.toString());
         });
     });
 
@@ -115,9 +134,11 @@ router.route('/rawpesans')
 router.route('/rawpesans/dari/:nama')
     .get(function(req, res) {
         Pesan.find({ 'dari': {$regex:req.params.nama, $options: 'i'}}, function (err, pesan) {
-            if (err)
+            if (err) 
                 res.send(err);
-            res.json(pesan);
+            // Encrypt
+            var chipertext = CryptoJS.AES.encrypt(JSON.stringify(pesan), encryptpass);        
+            res.send(chipertext.toString());
         });
     })
 
@@ -127,7 +148,9 @@ router.route('/rawpesans/type/:tipe')
         Pesan.find({ 'type': req.params.tipe}, function (err, pesan) {
             if (err)
                 res.send(err);
-            res.json(pesan);
+            // Encrypt
+            var chipertext = CryptoJS.AES.encrypt(JSON.stringify(pesans), encryptpass);
+            res.send(chipertext.toString());
         });
     })
 
@@ -135,9 +158,11 @@ router.route('/rawpesans/type/:tipe')
 router.route('/rawpesans/:pesan_id')
     .get(function(req, res) {
         Pesan.findById(req.params.pesan_id, function(err, pesan) {
-            if (err)
+            if (err) 
                 res.send(err);
-            res.json(pesan);
+            // Encrypt
+            var chipertext = CryptoJS.AES.encrypt(JSON.stringify(pesan), encryptpass);
+            res.send(chipertext.toString());
         });
     })
 
@@ -196,10 +221,11 @@ router.route('/rawpesans/filter/:paramwaktu')
         var thePrevDate = util.getNPrevDate(nPrev);
         
         Pesan.find({'date': {$gte: thePrevDate}}, function(err, pesan) {
-            if (err)
+            if (err) 
                 res.send(err);
-
-            res.json(pesan);
+            // Encrypt
+            var chipertext = CryptoJS.AES.encrypt(JSON.stringify(pesan), encryptpass);
+            res.send(chipertext.toString());
         });
     })
 
@@ -209,7 +235,9 @@ router.route('/rawpesans/isi/:pesan')
         Pesan.find({ 'pesan': {$regex:req.params.pesan, $options: 'i'}}, function (err, pesan) {
             if (err)
                 res.send(err);
-            res.json(pesan);
+            // Encrypt
+            var chipertext = CryptoJS.AES.encrypt(JSON.stringify(pesan), encryptpass);
+            res.send(chipertext.toString());
         });
     })
 
@@ -280,7 +308,9 @@ router.route('/rawtwitters')
         Twitter.find(function(err, twit) {
             if (err)
                 res.send(err);
-            res.json(twit);
+            // Encrypt
+            var chipertext = CryptoJS.AES.encrypt(JSON.stringify(twit), encryptpass);
+            res.send(chipertext.toString());
         });
     });
 
@@ -344,8 +374,9 @@ router.route('/analysedinfo')
         AnalysedInfo.find(function(err, news) {
             if (err)
                 res.send(err);
-
-            res.json(news);
+            // Encrypt
+            var chipertext = CryptoJS.AES.encrypt(JSON.stringify(news), encryptpass);
+            res.send(chipertext.toString());
         });
     });
 
@@ -366,7 +397,9 @@ router.route('/analysedinfo/filter/:paramwaktu/source/:paramsource')
             AnalysedInfo.find({'eventDateDate': {$gte: thePrevDate}}, function (err, info) {
                 if (err)
                     res.send(err);
-                res.json(info);
+                // Encrypt
+                var chipertext = CryptoJS.AES.encrypt(JSON.stringify(info), encryptpass);
+                res.send(chipertext.toString());
             });
         } 
         else {
@@ -378,7 +411,9 @@ router.route('/analysedinfo/filter/:paramwaktu/source/:paramsource')
             }, function (err, info) {
                 if (err)
                     res.send(err);
-                res.json(info);
+                // Encrypt
+                var chipertext = CryptoJS.AES.encrypt(JSON.stringify(info), encryptpass);
+                res.send(chipertext.toString());
             });
         }
     });
@@ -415,7 +450,9 @@ router.route('/analysedinfo/category/:paramcat/filter/:paramwaktu/source/:params
             }, function (err, info) {
                 if (err)
                     res.send(err);
-                res.json(info);
+                // Encrypt
+                var chipertext = CryptoJS.AES.encrypt(JSON.stringify(info), encryptpass);
+                res.send(chipertext.toString());
             });
         } 
         else {
@@ -428,7 +465,9 @@ router.route('/analysedinfo/category/:paramcat/filter/:paramwaktu/source/:params
             }, function (err, info) {
                 if (err)
                     res.send(err);
-                res.json(info);
+                // Encrypt
+                var chipertext = CryptoJS.AES.encrypt(JSON.stringify(info), encryptpass);
+                res.send(chipertext.toString());
             });
         }
     });
@@ -465,7 +504,9 @@ router.route('/analysedinfo/threatlevel/:paramlev/filter/:paramwaktu/source/:par
             }, function (err, info) {
                 if (err)
                     res.send(err);
-                res.json(info);
+                // Encrypt
+                var chipertext = CryptoJS.AES.encrypt(JSON.stringify(info), encryptpass);
+                res.send(chipertext.toString());
             });
         } 
         else {
@@ -478,7 +519,9 @@ router.route('/analysedinfo/threatlevel/:paramlev/filter/:paramwaktu/source/:par
             }, function (err, info) {
                 if (err)
                     res.send(err);
-                res.json(info);
+                // Encrypt
+                var chipertext = CryptoJS.AES.encrypt(JSON.stringify(info), encryptpass);
+                res.send(chipertext.toString());
             });
         }
     });
@@ -496,7 +539,9 @@ router.route('/threatsummary')
     .get(function(req, res) {
         console.log("Accessing /threatsummary");
         summ.getProvinceSummary(function(summary) {
-            res.json(summary);
+            // Encrypt
+            var chipertext = CryptoJS.AES.encrypt(JSON.stringify(summary), encryptpass);
+            res.send(chipertext.toString());
         });
     });
 
@@ -505,7 +550,9 @@ router.route('/categorysummary')
     .get(function(req, res) {
         console.log("Accessing /categorysummary");
         summ.getCategorySummary(function(summary) {
-            res.json(summary);
+            // Encrypt
+            var chipertext = CryptoJS.AES.encrypt(JSON.stringify(summary), encryptpass);
+            res.send(chipertext.toString());
         });
     });
 
@@ -524,7 +571,9 @@ router.route('/piechart/filter/:paramwaktu/source/:paramsource')
     .get(function(req, res) {
         console.log("Accessing /piechart with filter " + req.params.paramwaktu + " and source " + req.params.paramsource); 
         summ.getPiechartSummary(function(summary) {
-            res.json(summary);
+            // Encrypt
+            var chipertext = CryptoJS.AES.encrypt(JSON.stringify(summary), encryptpass);
+            res.send(chipertext.toString());
         }, req.params.paramwaktu, req.params.paramsource);
     });
 
@@ -536,7 +585,9 @@ router.route('/piechart/category/:paramcat/filter/:paramwaktu/source/:paramsourc
     .get(function(req, res) {
         console.log("Accessing /piechart with category " + req.params.paramcat + " and filter " + req.params.paramwaktu + " and source " + req.params.paramsource); 
         summ.getPiechartCategorySummary(function(summary) {
-            res.json(summary);
+            // Encrypt
+            var chipertext = CryptoJS.AES.encrypt(JSON.stringify(summary), encryptpass);
+            res.send(chipertext.toString());
         }, req.params.paramcat, req.params.paramwaktu, req.params.paramsource);
     });
 
@@ -549,7 +600,9 @@ router.route('/piechart/threatlevel/:paramlev/filter/:paramwaktu/source/:paramso
     .get(function(req, res) {
         console.log("Accessing /piechart with threat level " + req.params.paramlev + " and filter " + req.params.paramwaktu + " and source " + req.params.paramsource); 
         summ.getPiechartThreatSummary(function(summary) {
-            res.json(summary);
+            // Encrypt
+            var chipertext = CryptoJS.AES.encrypt(JSON.stringify(summary), encryptpass);
+            res.send(chipertext.toString());
         }, req.params.paramlev, req.params.paramwaktu, req.params.paramsource);
     });
 
@@ -568,7 +621,9 @@ router.route('/linechart/filter/:paramwaktu/source/:paramsource')
     .get(function(req, res) {
         console.log("Accessing /linechart with filter " + req.params.paramwaktu + " and source " + req.params.paramsource); 
         summ.getLinechartSummary(function(summary) {
-            res.json(summary);
+            // Encrypt
+            var chipertext = CryptoJS.AES.encrypt(JSON.stringify(summary), encryptpass);
+            res.send(chipertext.toString());
         }, req.params.paramwaktu, req.params.paramsource);
     });
 
@@ -580,7 +635,9 @@ router.route('/linechart/category/:paramcat/filter/:paramwaktu/source/:paramsour
     .get(function(req, res) {
         console.log("Accessing /linechart with category " + req.params.paramcat + " and filter " + req.params.paramwaktu + " and source " + req.params.paramsource); 
         summ.getLinechartCategorySummary(function(summary) {
-            res.json(summary);
+            // Encrypt
+            var chipertext = CryptoJS.AES.encrypt(JSON.stringify(summary), encryptpass);
+            res.send(chipertext.toString());
         }, req.params.paramcat, req.params.paramwaktu, req.params.paramsource);
     });
 
@@ -593,7 +650,9 @@ router.route('/linechart/threatlevel/:paramlev/filter/:paramwaktu/source/:params
     .get(function(req, res) {
         console.log("Accessing /linechart with threat level " + req.params.paramlev + " and filter " + req.params.paramwaktu + " and source " + req.params.paramsource); 
         summ.getLinechartThreatSummary(function(summary) {
-            res.json(summary);
+            // Encrypt
+            var chipertext = CryptoJS.AES.encrypt(JSON.stringify(summary), encryptpass);
+            res.send(chipertext.toString());
         }, req.params.paramlev, req.params.paramwaktu, req.params.paramsource);
     });
 
@@ -642,7 +701,9 @@ router.route('/usermanagement/account-data')
                     User.find({}, function(err, user) {
                         if (err) throw err;
                         if (verifiedJwt.body.role != 'user') {
-                            res.json(user);
+                            // Encrypt
+                            var chipertext = CryptoJS.AES.encrypt(JSON.stringify(user), encryptpass);
+                            res.send(chipertext.toString());
                         } else {
                             return res.status(403).send('YOU ARE FORBIDDEN!');
                         }
@@ -664,7 +725,9 @@ router.route('/usermanagement/update/:id')
             if(err){
                 res.status(401).send(err);
             } else {
-                res.json(user);
+                // Encrypt
+                var chipertext = CryptoJS.AES.encrypt(JSON.stringify(user), encryptpass);
+                res.send(chipertext.toString());
             }
         })
         } else {
@@ -832,7 +895,9 @@ router.get('/rolemanagement/role-data', function(req, res) {
             if (err){
                 res.status(400).send(err);
             } else {
-                res.json(role);
+                // Encrypt
+                var chipertext = CryptoJS.AES.encrypt(JSON.stringify(role), encryptpass);
+                res.send(chipertext.toString());
             }
         })
     } else {
@@ -849,7 +914,9 @@ router.route('/rolemanagement/update/:id')
                 if(err){
                     res.status(400).send(err);
                 } else {
-                    res.json(roles);
+                    // Encrypt
+                    var chipertext = CryptoJS.AES.encrypt(JSON.stringify(role), encryptpass);
+                    res.send(chipertext.toString());
                 }
             })
         } else {
@@ -916,6 +983,32 @@ router.delete('/rolemanagement/delete/:id', function(req, res) {
     }
 })
 
+//--------------------------------------TEST ENCRYPT DATA-------------------------------------------
+//--------------------------------------TEST ENCRYPT DATA-------------------------------------------
+//--------------------------------------TEST ENCRYPT DATA-------------------------------------------
+//--------------------------------------TEST ENCRYPT DATA-------------------------------------------
+
+router.post('/encrypt', function(req, res){
+    var split = req.headers.token.split(' ');
+    var token = split[1];
+    if(token) {
+        if(!req.body.data) {
+            res.status(209).send('Insert Data to Encrypt')
+        } else {
+            var data =  req.body.data;
+            // Encrypt
+            var chipertext = CryptoJS.AES.encrypt(JSON.stringify(data), token);
+            res.send(chipertext.toString());
+            // Decrypt
+            var bytes = CryptoJS.AES.decrypt(chipertext.toString(), token)
+            // console.log(bytes.toString(CryptoJS.enc.Utf8));
+            // res.send(bytes.toString(CryptoJS.enc.Utf8));
+        }
+    } else {
+        res.status(401).send(err);
+    }
+})
+
 // =============================================================================
 // all of our routes will be prefixed with /api
 app.use('/api', router);
@@ -927,15 +1020,3 @@ console.log(" ");
 console.log("===========================================================");
 console.log("initializing National Defense Information Grid API service");
 console.log("gopal's magic happens on port " + port);
-
-// var roles = '5983f0ff557336eb0f000001';
-
-// // User.find({role: roles}, function(err, role) {
-// //     if (err) return err;
-// //     else console.log(role);
-// // })
-
-// Roles.findById(roles, function(err, role){
-//     if (err) return err;
-//     else console.log(role);
-// })
