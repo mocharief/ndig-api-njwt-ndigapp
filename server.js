@@ -63,17 +63,22 @@ var router = express.Router();              // get an instance of the express Ro
 
 // middleware to use for all requests
 router.use(function(req, res, next) {
+    // var path = req.path.slice(1);
+    // // console.log(path + '\n\n');
+    // var decryptPath = CryptoJS.AES.decrypt(path, encryptpass)
+    // path = decryptPath.toString(CryptoJS.enc.Utf8);
+    // console.log(req.protocol);
+    
     if(req.path !== ('/authenticate')) {
         var split = req.headers.token.split(' ');
         var token = split[1];
-        console.log(token);
         if(token) {
             nJwt.verify(token, signingKey, function(err, decoded) {
                 if (err) {
-                    return res.json({ success: false, message: 'Failed to authenticate token.' });
+                    res.status(401).send(err);
                 } else {
                     req.decoded = decoded;
-                    console.log(token);
+                    next();
                 }
             })
         } else {
@@ -82,10 +87,11 @@ router.use(function(req, res, next) {
             message: 'No token provided.'
             }); 
         }       
+    } else {
+    next(); // make sure we go to the next routes and don't stop here
     }
     // do logging
     console.log('---Something is happening---', req.params);
-    next(); // make sure we go to the next routes and don't stop here
 });
 
 // test route to make sure everything is working (accessed at GET http://localhost:8080/api)
@@ -746,9 +752,6 @@ router.route('/usermanagement/account-data')
 // Router update data user
 router.route('/usermanagement/update/:id')
     .get(function(req, res){
-        // var split = req.headers.token.split(' ');
-        // var token = split[1];
-        // if (token) {
         User.findById(req.params.id, function(err,user){
             if(err){
                 res.status(401).send(err);
@@ -756,15 +759,9 @@ router.route('/usermanagement/update/:id')
                 res.send(user);
             }
         })
-        // } else {
-        //     res.status(401).send(err);
-        // }
     })
     
     .put(function(req, res) {
-        // var split = req.headers.token.split(' ');
-        // var token = split[1];
-        // if (token) {
         User.findById(req.params.id, function(err, user){
             if (err) {
                 res.status(401).send(err);
@@ -786,17 +783,11 @@ router.route('/usermanagement/update/:id')
                 }
             }
         })
-        // } else {
-        //     res.status(401).send(err);
-        // }
     })
 
 // Router Delete user
 router.route('/usermanagement/delete/:id')
         .delete(function(req, res){
-        // var split = req.headers.token.split(' ');
-        // var token = split[1];
-        // if (token) {
         User.findByIdAndRemove(req.params.id, function(err,user){
             if(err){
                 res.status(401).send(err);
@@ -807,9 +798,6 @@ router.route('/usermanagement/delete/:id')
                 });
             }
         })
-        // } else {
-        //     res.status(401).send(err);
-        // }
     })
 
 // Router Login    
@@ -823,15 +811,13 @@ router.post('/authenticate', function(req, res){
             res.status(404)
                 .send('Authentication failed! Email not found');
         } else if(user){
-            user.comparePassword(req.body.password, function(err, isMatch){
-                if(isMatch && !err){
+            if(req.body.password === user.password) {
                     var token = getToken(user, signingKey);
                     res.json ({ token : token });
-                } else {
+            } else {
                     res.status(404)
                         .send('Authentication failed! Wrong password');
-                }
-            });
+            }
         }
     });
 });
@@ -877,15 +863,18 @@ function getToken(user, secretKey) {
     return token;
 }
 
+// function encyrypt data
+function encryptData(data, encryptpass) {
+    var encryptData = CryptoJS.AES.encrypt(JSON.stringify(data), encryptpass);
+    return encryptData.toString();
+}
+
 // ----------------------------ROlE MANAGEMENT----------------------------------
 // ----------------------------ROlE MANAGEMENT----------------------------------
 // ----------------------------ROlE MANAGEMENT----------------------------------
 // ----------------------------ROlE MANAGEMENT----------------------------------
 
 router.post('/rolemanagement/create', function(req,res) {
-    // var split = req.headers.token.split(' ');
-    // var token = split[1];
-    // if (token) {
         if(!req.body.rolename) {
             res.status(209)
                 .send('Please Insert Data')
@@ -893,7 +882,7 @@ router.post('/rolemanagement/create', function(req,res) {
             var newRole = new Roles({
                 rolename: req.body.rolename,
                 viewDashboard: req.body.viewDashboard,
-                vewCategory: req.body.viewCategory,
+                viewCategory: req.body.viewCategory,
                 viewThreat: req.body.viewThreat,
                 viewIntel: req.body.viewIntel,
                 viewNews: req.body.viewNews,
@@ -908,15 +897,9 @@ router.post('/rolemanagement/create', function(req,res) {
                 res.send(newRole)
             });
         }
-    // } else {
-    //     res.status(401).send(err);
-    // }
 })
 
 router.get('/rolemanagement/role-data', function(req, res) {
-    // var split = req.headers.token.split(' ');
-    // var token = split[1];
-    // if (token) {
         Roles.find({}, function(err, role){
             if (err){
                 res.status(400).send(err);
@@ -927,16 +910,10 @@ router.get('/rolemanagement/role-data', function(req, res) {
                  res.json({ data: chipertext.toString(), secta: true });
             }
         })
-    // } else {
-    //     res.status(401).send(err);
-    // }
 })
 
 router.route('/rolemanagement/update/:id')
     .get(function(req,res) {
-        // var split = req.headers.token.split(' ');
-        // var token = split[1];
-        // if (token) {
             Roles.findById(req.params.id, function(err, roles){
                 if(err){
                     res.status(400).send(err);
@@ -944,15 +921,9 @@ router.route('/rolemanagement/update/:id')
                     res.send(roles);
                 }
             })
-        // } else {
-        //     res.status(401).send(err);
-        // }
     })
 
     .put(function(req, res) {
-        // var split = req.headers.token.split(' ');
-        // var token = split[1];
-        // if (token) {
             Roles.findById(req.params.id, function(err, roles) {
                 if(err) {
                     res.status(400).send(err);
@@ -963,7 +934,7 @@ router.route('/rolemanagement/update/:id')
                     } else {
                         roles.rolename = req.body.rolename,
                         roles.viewDashboard = req.body.viewDashboard,
-                        roles.vewCategory = req.body.viewCategory,
+                        roles.viewCategory = req.body.viewCategory,
                         roles.viewThreat = req.body.viewThreat,
                         roles.viewIntel = req.body.viewIntel,
                         roles.viewNews = req.body.viewNews,
@@ -979,16 +950,10 @@ router.route('/rolemanagement/update/:id')
                     }
                 }
             })
-        // } else {
-        //     res.status(401).send(err);
-        // }
     })
 
 router.delete('/rolemanagement/delete/:id', function(req, res) {
-    // var split = req.headers.token.split(' ');
-    // var token = split[1];
     var id_role = req.params.id;
-    // if (token) {
         Roles.findById(id_role, function (err, role){
             if(role != '') {
                 User.find({role: id_role}, function(err, user) {
@@ -1003,34 +968,20 @@ router.delete('/rolemanagement/delete/:id', function(req, res) {
                 res.status(400).send('Role not found');
             }
         })
-    // } else {
-    //     res.status(401).send(err);
-    // }
 })
 
-//--------------------------------------TEST ENCRYPT DATA-------------------------------------------
-//--------------------------------------TEST ENCRYPT DATA-------------------------------------------
-//--------------------------------------TEST ENCRYPT DATA-------------------------------------------
-//--------------------------------------TEST ENCRYPT DATA-------------------------------------------
-
 router.post('/encrypt', function(req, res){
-    var split = req.headers.token.split(' ');
-    var token = split[1];
-    if(token) {
-        if(!req.body.data) {
-            res.status(209).send('Insert Data to Encrypt')
-        } else {
-            var data =  req.body.data;
-            // Encrypt
-            var chipertext = CryptoJS.AES.encrypt(JSON.stringify(data), token);
-             res.json({ data: chipertext.toString(), secta: true });
-            // Decrypt
-            var bytes = CryptoJS.AES.decrypt(chipertext.toString(), token)
-            // console.log(bytes.toString(CryptoJS.enc.Utf8));
-            // res.send(bytes.toString(CryptoJS.enc.Utf8));
-        }
+    req.body.data;
+    if(!req.body.data) {
+        res.status(209).send('Insert Data to Encrypt')
     } else {
-        res.status(401).send(err);
+        var data =  req.body.data;
+        // Encrypt
+        res.json({data: encryptData(data, encryptpass), secta: true});
+        // Decrypt
+        // var bytes = CryptoJS.AES.decrypt(chipertext.toString(), encryptpass)
+        // console.log(bytes.toString(CryptoJS.enc.Utf8));
+        // res.send(bytes.toString(CryptoJS.enc.Utf8));
     }
 })
 

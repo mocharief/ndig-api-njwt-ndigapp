@@ -11,7 +11,7 @@ var RoleSchema  = new Schema ({
         required: true
     },
     viewDashboard: Boolean,
-    vewCategory: Boolean,
+    viewCategory: Boolean,
     viewThreat: Boolean,
     viewIntel: Boolean,
     viewNews: Boolean,
