@@ -55,28 +55,27 @@ app.all('/*', function(req, res, next) {
 // GLOBAL VARIABEL
 var port = process.env.PORT || 9099;        // set our port
 var START, END;
-var encryptpass = 'NDIG-DIAS';
+var encryptpass = 'skm123';
 
 // ROUTES FOR OUR API
 // =============================================================================
 var router = express.Router();              // get an instance of the express Router
 
 // middleware to use for all requests
-router.use(function(req, res, next) {
-    // var path = req.path.slice(1);
-    // // console.log(path + '\n\n');
-    // var decryptPath = CryptoJS.AES.decrypt(path, encryptpass)
-    // path = decryptPath.toString(CryptoJS.enc.Utf8);
-    // console.log(req.protocol);
-    
+router.use(function(req, res, next) {    
     if(req.path !== ('/authenticate')) {
-        var split = req.headers.token.split(' ');
+        var bytes = CryptoJS.AES.decrypt(req.url.substr(1), encryptpass);
+        var decryptURI = bytes.toString(CryptoJS.enc.Utf8);
+        var split = decryptURI.substr(1).slice(0, -1).split('?token=');
         var token = split[1];
+
         if(token) {
             nJwt.verify(token, signingKey, function(err, decoded) {
                 if (err) {
                     res.status(401).send(err);
                 } else {
+                    req.url = split[0].substr(4);
+                    req.originalUrl = split[0];
                     req.decoded = decoded;
                     next();
                 }
@@ -88,7 +87,7 @@ router.use(function(req, res, next) {
             }); 
         }       
     } else {
-    next(); // make sure we go to the next routes and don't stop here
+        next(); // make sure we go to the next routes and don't stop here
     }
     // do logging
     console.log('---Something is happening---', req.params);
