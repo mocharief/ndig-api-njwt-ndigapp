@@ -55,7 +55,7 @@ app.all('/*', function(req, res, next) {
 // GLOBAL VARIABEL
 var port = process.env.PORT || 9099;        // set our port
 var START, END;
-var encryptpass = 'skm123';
+var encryptpass = 'NDIG-DIAS';
 
 // ROUTES FOR OUR API
 // =============================================================================
@@ -68,7 +68,6 @@ router.use(function(req, res, next) {
         var decryptURI = bytes.toString(CryptoJS.enc.Utf8);
         var split = decryptURI.substr(1).slice(0, -1).split('?token=');
         var token = split[1];
-
         if(token) {
             nJwt.verify(token, signingKey, function(err, decoded) {
                 if (err) {
