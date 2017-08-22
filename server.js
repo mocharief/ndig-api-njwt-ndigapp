@@ -56,6 +56,7 @@ app.all('/*', function(req, res, next) {
 var port = process.env.PORT || 9099;        // set our port
 var START, END;
 var encryptpass = 'NDIG-DIAS';
+var MODE_DEVELOP = true;
 
 // ROUTES FOR OUR API
 // =============================================================================
@@ -64,29 +65,57 @@ var router = express.Router();              // get an instance of the express Ro
 // middleware to use for all requests
 router.use(function(req, res, next) {    
     if(req.path !== ('/authenticate')) {
-        var bytes = CryptoJS.AES.decrypt(req.url.substr(1), encryptpass);
-        var decryptURI = bytes.toString(CryptoJS.enc.Utf8);
-        var split = decryptURI.substr(1).slice(0, -1).split('?token=');
-        var token = split[1];
-        if(token) {
-            nJwt.verify(token, signingKey, function(err, decoded) {
-                if (err) {
-                    res.status(401).send(err);
-                } else {
-                    req.url = split[0].substr(4);
-                    req.originalUrl = split[0];
-                    req.decoded = decoded;
-                    next();
-                }
-            })
-        } else {
-            return res.status(403).send({ 
-            success: false, 
-            message: 'No token provided.'
-            }); 
-        }       
+        // if (MODE_DEVELOP === true) {
+            var split = req.headers.token.split(' ');
+            var token = split[1];
+            if (token) {
+                nJwt.verify(token, signingKey, function(err,verifiedJwt) {
+                    if (err) {
+                        res.status(401).send(err);
+                    } else {
+                        if (verifiedJwt.body.exp > Math.floor(Date.now()/1000)){
+                            if ((verifiedJwt.body.exp-Math.floor(Date.now()/1000)) <= 40) {
+                                var newToken = getToken(verifiedJwt.body, signingKey);
+                                res.write(newToken);
+                                next();
+                            } else {
+                                res.send(verifiedJwt);
+                                next();
+                            }
+                        } else {
+                            res.status(401).send(verifiedJwt);
+                        }
+                    }
+                });
+            } else {
+                res.status(401).send('Error Token');
+            }
+            // next() // make sure we go to the next routes and don't stop here
+        // } else {
+            var bytes = CryptoJS.AES.decrypt(req.url.substr(1), encryptpass);
+            var decryptURI = bytes.toString(CryptoJS.enc.Utf8);
+            var split = decryptURI.substr(1).slice(0, -1).split('?token=');
+            var token = split[1];
+            if(token) {
+                nJwt.verify(token, signingKey, function(err, decoded) {
+                    if (err) {
+                        res.status(401).send(err);
+                    } else {
+                        req.url = split[0].substr(4);
+                        req.originalUrl = split[0];
+                        req.decoded = decoded;
+                        next();
+                    }
+                })
+            } else {
+                return res.status(403).send({ 
+                success: false, 
+                message: 'No token provided.'
+                }); 
+            }       
+        // }
     } else {
-        next(); // make sure we go to the next routes and don't stop here
+        next();
     }
     // do logging
     console.log('---Something is happening---', req.params);
@@ -131,9 +160,7 @@ router.route('/rawpesans')
             if (err)
                 res.send(err);
             // Encrypt
-            var chipertext = CryptoJS.AES.encrypt(JSON.stringify(pesans), encryptpass);
-
-             res.json({ data: chipertext.toString(), secta: true });
+            res.json({ data: encryptData(pesans, encryptpass), secta: true });
         });
     });
 
@@ -147,9 +174,7 @@ router.route('/rawpesans/dari/:nama')
             if (err) 
                 res.send(err);
             // Encrypt
-            var chipertext = CryptoJS.AES.encrypt(JSON.stringify(pesan), encryptpass);        
-             
-             res.json({ data: chipertext.toString(), secta: true });
+            res.json({ data: encryptData(pesan, encryptpass), secta: true });
         });
     })
 
@@ -160,9 +185,7 @@ router.route('/rawpesans/type/:tipe')
             if (err)
                 res.send(err);
             // Encrypt
-            var chipertext = CryptoJS.AES.encrypt(JSON.stringify(pesans), encryptpass);
-             
-             res.json({ data: chipertext.toString(), secta: true });
+            res.json({ data: encryptData(pesan, encryptpass), secta: true });
         });
     })
 
@@ -173,9 +196,7 @@ router.route('/rawpesans/:pesan_id')
             if (err) 
                 res.send(err);
             // Encrypt
-            var chipertext = CryptoJS.AES.encrypt(JSON.stringify(pesan), encryptpass);
-             
-             res.json({ data: chipertext.toString(), secta: true });
+            res.json({ data: encryptData(pesan, encryptpass), secta: true });
         });
     })
 
@@ -237,9 +258,7 @@ router.route('/rawpesans/filter/:paramwaktu')
             if (err) 
                 res.send(err);
             // Encrypt
-            var chipertext = CryptoJS.AES.encrypt(JSON.stringify(pesan), encryptpass);
-             
-             res.json({ data: chipertext.toString(), secta: true });
+            res.json({ data: encryptData(pesan, encryptpass), secta: true });
         });
     })
 
@@ -250,9 +269,7 @@ router.route('/rawpesans/isi/:pesan')
             if (err)
                 res.send(err);
             // Encrypt
-            var chipertext = CryptoJS.AES.encrypt(JSON.stringify(pesan), encryptpass);
-             
-             res.json({ data: chipertext.toString(), secta: true });
+            res.json({ data: encryptData(pesan, encryptpass), secta: true });
         });
     })
 
@@ -324,9 +341,7 @@ router.route('/rawtwitters')
             if (err)
                 res.send(err);
             // Encrypt
-            var chipertext = CryptoJS.AES.encrypt(JSON.stringify(twit), encryptpass);
-             
-             res.json({ data: chipertext.toString(), secta: true });
+            res.json({ data: encryptData(twit, encryptpass), secta: true });
         });
     });
 
@@ -391,9 +406,7 @@ router.route('/analysedinfo')
             if (err)
                 res.send(err);
             // Encrypt
-            var chipertext = CryptoJS.AES.encrypt(JSON.stringify(news), encryptpass);
-             
-             res.json({ data: chipertext.toString(), secta: true });
+            res.json({ data: encryptData(news, encryptpass), secta: true });
         });
     });
 
@@ -415,9 +428,7 @@ router.route('/analysedinfo/filter/:paramwaktu/source/:paramsource')
                 if (err)
                     res.send(err);
                 // Encrypt
-                var chipertext = CryptoJS.AES.encrypt(JSON.stringify(info), encryptpass);
-                 
-                 res.json({ data: chipertext.toString(), secta: true });
+                res.json({ data: encryptData(info, encryptpass), secta: true });
             });
         } 
         else {
@@ -430,9 +441,7 @@ router.route('/analysedinfo/filter/:paramwaktu/source/:paramsource')
                 if (err)
                     res.send(err);
                 // Encrypt
-                var chipertext = CryptoJS.AES.encrypt(JSON.stringify(info), encryptpass);
-                 
-                 res.json({ data: chipertext.toString(), secta: true });
+                res.json({ data: encryptData(info, encryptpass), secta: true });
             });
         }
     });
@@ -470,9 +479,7 @@ router.route('/analysedinfo/category/:paramcat/filter/:paramwaktu/source/:params
                 if (err)
                     res.send(err);
                 // Encrypt
-                var chipertext = CryptoJS.AES.encrypt(JSON.stringify(info), encryptpass);
-                 
-                 res.json({ data: chipertext.toString(), secta: true });
+                res.json({ data: encryptData(info, encryptpass), secta: true });
             });
         } 
         else {
@@ -486,9 +493,7 @@ router.route('/analysedinfo/category/:paramcat/filter/:paramwaktu/source/:params
                 if (err)
                     res.send(err);
                 // Encrypt
-                var chipertext = CryptoJS.AES.encrypt(JSON.stringify(info), encryptpass);
-                 
-                 res.json({ data: chipertext.toString(), secta: true });
+                res.json({ data: encryptData(info, encryptpass), secta: true });
             });
         }
     });
@@ -526,9 +531,7 @@ router.route('/analysedinfo/threatlevel/:paramlev/filter/:paramwaktu/source/:par
                 if (err)
                     res.send(err);
                 // Encrypt
-                var chipertext = CryptoJS.AES.encrypt(JSON.stringify(info), encryptpass);
-                 
-                 res.json({ data: chipertext.toString(), secta: true });
+                res.json({ data: encryptData(info, encryptpass), secta: true });
             });
         } 
         else {
@@ -542,9 +545,7 @@ router.route('/analysedinfo/threatlevel/:paramlev/filter/:paramwaktu/source/:par
                 if (err)
                     res.send(err);
                 // Encrypt
-                var chipertext = CryptoJS.AES.encrypt(JSON.stringify(info), encryptpass);
-                 
-                 res.json({ data: chipertext.toString(), secta: true });
+                res.json({ data: encryptData(info, encryptpass), secta: true });
             });
         }
     });
@@ -563,9 +564,7 @@ router.route('/threatsummary')
         console.log("Accessing /threatsummary");
         summ.getProvinceSummary(function(summary) {
             // Encrypt
-            var chipertext = CryptoJS.AES.encrypt(JSON.stringify(summary), encryptpass);
-             
-             res.json({ data: chipertext.toString(), secta: true });
+            res.json({ data: encryptData(summary, encryptpass), secta: true });
         });
     });
 
@@ -575,9 +574,7 @@ router.route('/categorysummary')
         console.log("Accessing /categorysummary");
         summ.getCategorySummary(function(summary) {
             // Encrypt
-            var chipertext = CryptoJS.AES.encrypt(JSON.stringify(summary), encryptpass);
-             
-             res.json({ data: chipertext.toString(), secta: true });
+            res.json({ data: encryptData(summary, encryptpass), secta: true });
         });
     });
 
@@ -597,9 +594,7 @@ router.route('/piechart/filter/:paramwaktu/source/:paramsource')
         console.log("Accessing /piechart with filter " + req.params.paramwaktu + " and source " + req.params.paramsource); 
         summ.getPiechartSummary(function(summary) {
             // Encrypt
-            var chipertext = CryptoJS.AES.encrypt(JSON.stringify(summary), encryptpass);
-             
-             res.json({ data: chipertext.toString(), secta: true });
+            res.json({ data: encryptData(summary, encryptpass), secta: true });
         }, req.params.paramwaktu, req.params.paramsource);
     });
 
@@ -612,9 +607,7 @@ router.route('/piechart/category/:paramcat/filter/:paramwaktu/source/:paramsourc
         console.log("Accessing /piechart with category " + req.params.paramcat + " and filter " + req.params.paramwaktu + " and source " + req.params.paramsource); 
         summ.getPiechartCategorySummary(function(summary) {
             // Encrypt
-            var chipertext = CryptoJS.AES.encrypt(JSON.stringify(summary), encryptpass);
-             
-             res.json({ data: chipertext.toString(), secta: true });
+            res.json({ data: encryptData(summary, encryptpass), secta: true });
         }, req.params.paramcat, req.params.paramwaktu, req.params.paramsource);
     });
 
@@ -628,9 +621,7 @@ router.route('/piechart/threatlevel/:paramlev/filter/:paramwaktu/source/:paramso
         console.log("Accessing /piechart with threat level " + req.params.paramlev + " and filter " + req.params.paramwaktu + " and source " + req.params.paramsource); 
         summ.getPiechartThreatSummary(function(summary) {
             // Encrypt
-            var chipertext = CryptoJS.AES.encrypt(JSON.stringify(summary), encryptpass);
-             
-             res.json({ data: chipertext.toString(), secta: true });
+            res.json({ data: encryptData(summary, encryptpass), secta: true });
         }, req.params.paramlev, req.params.paramwaktu, req.params.paramsource);
     });
 
@@ -650,9 +641,7 @@ router.route('/linechart/filter/:paramwaktu/source/:paramsource')
         console.log("Accessing /linechart with filter " + req.params.paramwaktu + " and source " + req.params.paramsource); 
         summ.getLinechartSummary(function(summary) {
             // Encrypt
-            var chipertext = CryptoJS.AES.encrypt(JSON.stringify(summary), encryptpass);
-             
-             res.json({ data: chipertext.toString(), secta: true });
+            res.json({ data: encryptData(summary, encryptpass), secta: true });
         }, req.params.paramwaktu, req.params.paramsource);
     });
 
@@ -665,9 +654,7 @@ router.route('/linechart/category/:paramcat/filter/:paramwaktu/source/:paramsour
         console.log("Accessing /linechart with category " + req.params.paramcat + " and filter " + req.params.paramwaktu + " and source " + req.params.paramsource); 
         summ.getLinechartCategorySummary(function(summary) {
             // Encrypt
-            var chipertext = CryptoJS.AES.encrypt(JSON.stringify(summary), encryptpass);
-             
-             res.json({ data: chipertext.toString(), secta: true });
+            res.json({ data: encryptData(summary, encryptpass), secta: true });
         }, req.params.paramcat, req.params.paramwaktu, req.params.paramsource);
     });
 
@@ -681,9 +668,7 @@ router.route('/linechart/threatlevel/:paramlev/filter/:paramwaktu/source/:params
         console.log("Accessing /linechart with threat level " + req.params.paramlev + " and filter " + req.params.paramwaktu + " and source " + req.params.paramsource); 
         summ.getLinechartThreatSummary(function(summary) {
             // Encrypt
-            var chipertext = CryptoJS.AES.encrypt(JSON.stringify(summary), encryptpass);
-             
-             res.json({ data: chipertext.toString(), secta: true });
+            res.json({ data: encryptData(summary, encryptpass), secta: true });
         }, req.params.paramlev, req.params.paramwaktu, req.params.paramsource);
     });
 
@@ -733,9 +718,7 @@ router.route('/usermanagement/account-data')
                         if (err) throw err;
                         if (verifiedJwt.body.role != 'user') {
                             // Encrypt
-                            var chipertext = CryptoJS.AES.encrypt(JSON.stringify(user), encryptpass);
-                             
-                             res.json({ data: chipertext.toString(), secta: true });
+                            res.json({ data: encryptData(user, encryptpass), secta: true });
                         } else {
                             return res.status(403).send('YOU ARE FORBIDDEN!');
                         }
@@ -846,6 +829,21 @@ router.get('/verify-token', function(req, res){
     }
 });
 
+// function verifyToken(token) {
+//     var verifyedToken = nJwt.verify(token, signingKey);
+//     if (verifyedToken.body.exp > Math.floor(Date.now()/1000)){
+//         if ((verifyedToken.body.exp-Math.floor(Date.now()/1000)) <= 60*60*2) {
+//             var newToken = getToken(verifyedToken.body, signingKey);
+//             return newToken;
+//         } else {
+//             return verifyedToken
+//         }
+//     } else {
+//         return verifyedToken;
+//     }
+
+// }
+
 // function get token using njwt
 function getToken(user, secretKey) {
     var claims = {
@@ -863,8 +861,12 @@ function getToken(user, secretKey) {
 
 // function encyrypt data
 function encryptData(data, encryptpass) {
-    var encryptData = CryptoJS.AES.encrypt(JSON.stringify(data), encryptpass);
-    return encryptData.toString();
+    if (MODE_DEVELOP === true) {
+        return data;
+    } else {
+        var encryptData = CryptoJS.AES.encrypt(JSON.stringify(data), encryptpass);
+        return encryptData.toString();
+    }
 }
 
 // ----------------------------ROlE MANAGEMENT----------------------------------
@@ -981,6 +983,10 @@ router.post('/encrypt', function(req, res){
         // console.log(bytes.toString(CryptoJS.enc.Utf8));
         // res.send(bytes.toString(CryptoJS.enc.Utf8));
     }
+})
+
+router.get('/testosteron', function(req, res) {
+    res.write('naonna we lah');
 })
 
 // =============================================================================
