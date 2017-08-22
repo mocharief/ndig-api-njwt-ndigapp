@@ -66,30 +66,30 @@ var router = express.Router();              // get an instance of the express Ro
 router.use(function(req, res, next) {    
     if(req.path !== ('/authenticate')) {
         // if (MODE_DEVELOP === true) {
-            var split = req.headers.token.split(' ');
-            var token = split[1];
-            if (token) {
-                nJwt.verify(token, signingKey, function(err,verifiedJwt) {
-                    if (err) {
-                        res.status(401).send(err);
-                    } else {
-                        if (verifiedJwt.body.exp > Math.floor(Date.now()/1000)){
-                            if ((verifiedJwt.body.exp-Math.floor(Date.now()/1000)) <= 40) {
-                                var newToken = getToken(verifiedJwt.body, signingKey);
-                                res.write(newToken);
-                                next();
-                            } else {
-                                res.send(verifiedJwt);
-                                next();
-                            }
-                        } else {
-                            res.status(401).send(verifiedJwt);
-                        }
-                    }
-                });
-            } else {
-                res.status(401).send('Error Token');
-            }
+            // var split = req.headers.token.split(' ');
+            // var token = split[1];
+            // if (token) {
+            //     nJwt.verify(token, signingKey, function(err,verifiedJwt) {
+            //         if (err) {
+            //             res.status(401).send(err);
+            //         } else {
+            //             if (verifiedJwt.body.exp > Math.floor(Date.now()/1000)){
+            //                 if ((verifiedJwt.body.exp-Math.floor(Date.now()/1000)) <= 40) {
+            //                     var newToken = getToken(verifiedJwt.body, signingKey);
+            //                     res.write(newToken);
+            //                     next();
+            //                 } else {
+            //                     res.send(verifiedJwt);
+            //                     next();
+            //                 }
+            //             } else {
+            //                 res.status(401).send(verifiedJwt);
+            //             }
+            //         }
+            //     });
+            // } else {
+            //     res.status(401).send('Error Token');
+            // }
             // next() // make sure we go to the next routes and don't stop here
         // } else {
             var bytes = CryptoJS.AES.decrypt(req.url.substr(1), encryptpass);
