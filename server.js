@@ -56,7 +56,7 @@ app.all('/*', function(req, res, next) {
 var port = process.env.PORT || 9099;        // set our port
 var START, END;
 var encryptpass = 'NDIG-DIAS';
-var MODE_DEVELOP = true;
+var MODE_DEVELOP = false;
 
 // ROUTES FOR OUR API
 // =============================================================================
@@ -65,46 +65,54 @@ var router = express.Router();              // get an instance of the express Ro
 // middleware to use for all requests
 router.use(function(req, res, next) {    
     if(req.path !== ('/authenticate')) {
-        // if (MODE_DEVELOP === true) {
-            // var split = req.headers.token.split(' ');
-            // var token = split[1];
-            // if (token) {
-            //     nJwt.verify(token, signingKey, function(err,verifiedJwt) {
-            //         if (err) {
-            //             res.status(401).send(err);
-            //         } else {
-            //             if (verifiedJwt.body.exp > Math.floor(Date.now()/1000)){
-            //                 if ((verifiedJwt.body.exp-Math.floor(Date.now()/1000)) <= 40) {
-            //                     var newToken = getToken(verifiedJwt.body, signingKey);
-            //                     res.write(newToken);
-            //                     next();
-            //                 } else {
-            //                     res.send(verifiedJwt);
-            //                     next();
-            //                 }
-            //             } else {
-            //                 res.status(401).send(verifiedJwt);
-            //             }
-            //         }
-            //     });
-            // } else {
-            //     res.status(401).send('Error Token');
-            // }
+        if (MODE_DEVELOP === true) {
+            var split = req.headers.token.split(' ');
+            var token = split[1];
+            if (token) {
+                nJwt.verify(token, signingKey, function(err,verifiedJwt) {
+                    if (err) {
+                        res.status(400).send(err);
+                    } else {
+                        req.body.roleId = verifiedJwt.body.role;
+                        if (verifiedJwt.body.exp > Math.floor(Date.now()/1000)){
+                            if ((verifiedJwt.body.exp-Math.floor(Date.now()/1000)) <= 30) {
+                                var newToken = getToken(verifiedJwt.body, signingKey);
+                                res.header('token', newToken);
+                            }
+                                next()
+                        } else {
+                            res.status(401).send(verifiedJwt);
+                        }
+                    }
+                });
+            } else {
+                res.status(401).send('Error Token');
+            }
             // next() // make sure we go to the next routes and don't stop here
-        // } else {
+        } else {
             var bytes = CryptoJS.AES.decrypt(req.url.substr(1), encryptpass);
             var decryptURI = bytes.toString(CryptoJS.enc.Utf8);
             var split = decryptURI.substr(1).slice(0, -1).split('?token=');
             var token = split[1];
             if(token) {
                 nJwt.verify(token, signingKey, function(err, decoded) {
+                    req.body.roleId = decoded.body.role
                     if (err) {
                         res.status(401).send(err);
                     } else {
-                        req.url = split[0].substr(4);
-                        req.originalUrl = split[0];
-                        req.decoded = decoded;
-                        next();
+                        if (verifiedJwt.body.exp > Math.floor(Date.now()/1000)){
+                            if ((verifiedJwt.body.exp-Math.floor(Date.now()/1000)) <= 30) {
+                                var newToken = getToken(verifiedJwt.body, signingKey);
+                                res.header('token', newToken);
+                            }
+                                req.url = split[0].substr(4);
+                                req.originalUrl = split[0];
+                                req.decoded = decoded;
+                                next();
+                        } else {
+                            res.status(401).send(verifiedJwt);
+                        }
+                        
                     }
                 })
             } else {
@@ -113,7 +121,7 @@ router.use(function(req, res, next) {
                 message: 'No token provided.'
                 }); 
             }       
-        // }
+        }
     } else {
         next();
     }
@@ -707,27 +715,25 @@ router.route('/usermanagement/signup')
 // Router get data user dari mongoDB
 router.route('/usermanagement/account-data')
     .get(function(req, res) {
-        var split = req.headers.token.split(' ');
-        var token = split[1];
-        if (token) {
-            nJwt.verify(token, signingKey, function(err, verifiedJwt){
-                if (err){
-                    res.status(401).send(err);
-                } else {
-                    User.find({}, function(err, user) {
-                        if (err) throw err;
-                        if (verifiedJwt.body.role != 'user') {
-                            // Encrypt
-                            res.json({ data: encryptData(user, encryptpass), secta: true });
+        var roleId = req.body.roleId;
+        Roles.findById(roleId, function(err, role){
+            if (err) {
+                res.status(404).send(err);
+            } else {
+                if(role.viewUserManage === true) {
+                    // Encrypt
+                    User.find({}, function(err, users) {
+                        if (err) {
+                            res.status(404).send(err);
                         } else {
-                            return res.status(403).send('YOU ARE FORBIDDEN!');
+                            res.json ({ data: encryptData(users, encryptpass), secta: true });
                         }
-                    });
+                    })
+                } else {
+                    res.status(403).send('YOU ARE FORBIDDEN!');
                 }
-            });
-        } else {
-            res.status(401).send(err);
-        }
+            }
+        })
     });
 
 // Router update data user
@@ -735,7 +741,7 @@ router.route('/usermanagement/update/:id')
     .get(function(req, res){
         User.findById(req.params.id, function(err,user){
             if(err){
-                res.status(401).send(err);
+                res.status(404).send(err);
             } else {
                 res.send(user);
             }
@@ -745,7 +751,7 @@ router.route('/usermanagement/update/:id')
     .put(function(req, res) {
         User.findById(req.params.id, function(err, user){
             if (err) {
-                res.status(401).send(err);
+                res.status(404).send(err);
             } else {
                 if(!req.body.username || !req.body.role || !req.body.password ) {
                     res.status(209)
@@ -771,7 +777,7 @@ router.route('/usermanagement/delete/:id')
         .delete(function(req, res){
         User.findByIdAndRemove(req.params.id, function(err,user){
             if(err){
-                res.status(401).send(err);
+                res.status(404).send(err);
             } else {
                 res.json({
                     msg: 'Account ' + user.username + ' successfully deleted',
@@ -803,32 +809,6 @@ router.post('/authenticate', function(req, res){
     });
 });
 
-// Router Verifikasi expired token
-router.get('/verify-token', function(req, res){
-    var split = req.headers.token.split(' ');
-    var token = split[1];
-    if (token) {
-        nJwt.verify(token, signingKey, function(err,verifiedJwt) {
-            if (err) {
-                res.status(401).send(err);
-            } else {
-                if (verifiedJwt.body.exp > Math.floor(Date.now()/1000)){
-                    if ((verifiedJwt.body.exp-Math.floor(Date.now()/1000)) <= 60*60*2) {
-                        var newToken = getToken(verifiedJwt.body, signingKey);
-                        res.json({ newToken : newToken });
-                    } else {
-                        res.send(verifiedJwt);
-                    }
-                } else {
-                    res.status(401).send(verifiedJwt);
-                }
-            }
-        });
-    } else {
-        res.status(401).send('Error Token');
-    }
-});
-
 // function verifyToken(token) {
 //     var verifyedToken = nJwt.verify(token, signingKey);
 //     if (verifyedToken.body.exp > Math.floor(Date.now()/1000)){
@@ -841,7 +821,6 @@ router.get('/verify-token', function(req, res){
 //     } else {
 //         return verifyedToken;
 //     }
-
 // }
 
 // function get token using njwt
@@ -854,7 +833,7 @@ function getToken(user, secretKey) {
         _id: user._id,
     };
     var jwt = nJwt.create(claims, secretKey);
-    jwt.setExpiration(Date.now() + (60*60*10*1000)); //(second * minute * 1000) in milisecond
+    jwt.setExpiration(Date.now() + (60*1000)); //(second * minute * 1000) in milisecond
     var token = jwt.compact();
     return token;
 }
@@ -900,23 +879,32 @@ router.post('/rolemanagement/create', function(req,res) {
 })
 
 router.get('/rolemanagement/role-data', function(req, res) {
-        Roles.find({}, function(err, role){
-            if (err){
-                res.status(400).send(err);
+    var roleId = req.body.roleId
+    Roles.findById(roleId, function(err, role){
+        if (err) {
+            res.status(404).send(err)
+        } else {
+            if(role.viewUserManage === true){
+                Roles.find({}, function(err, roles){
+                    if (err){
+                        res.status(404).send(err);
+                    } else {
+                        // Encrypt    
+                        res.json({ data: encryptData(roles, encryptpass), secta: true });
+                    }
+                })
             } else {
-                // Encrypt
-                var chipertext = CryptoJS.AES.encrypt(JSON.stringify(role), encryptpass);
-                 
-                 res.json({ data: chipertext.toString(), secta: true });
+                res.status(403).send('YOU ARE FORBIDDEN!');
             }
-        })
+        }
+    })
 })
 
 router.route('/rolemanagement/update/:id')
     .get(function(req,res) {
             Roles.findById(req.params.id, function(err, roles){
                 if(err){
-                    res.status(400).send(err);
+                    res.status(404).send(err);
                 } else {
                     res.send(roles);
                 }
@@ -926,7 +914,7 @@ router.route('/rolemanagement/update/:id')
     .put(function(req, res) {
             Roles.findById(req.params.id, function(err, roles) {
                 if(err) {
-                    res.status(400).send(err);
+                    res.status(404).send(err);
                 } else {
                     if(!req.body.rolename) {
                         res.status(209)
@@ -965,24 +953,9 @@ router.delete('/rolemanagement/delete/:id', function(req, res) {
                     }
                 })
             } else {
-                res.status(400).send('Role not found');
+                res.status(404).send('Role not found');
             }
         })
-})
-
-router.post('/encrypt', function(req, res){
-    req.body.data;
-    if(!req.body.data) {
-        res.status(209).send('Insert Data to Encrypt')
-    } else {
-        var data =  req.body.data;
-        // Encrypt
-        res.json({data: encryptData(data, encryptpass), secta: true});
-        // Decrypt
-        // var bytes = CryptoJS.AES.decrypt(chipertext.toString(), encryptpass)
-        // console.log(bytes.toString(CryptoJS.enc.Utf8));
-        // res.send(bytes.toString(CryptoJS.enc.Utf8));
-    }
 })
 
 // =============================================================================
