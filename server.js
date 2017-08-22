@@ -985,10 +985,6 @@ router.post('/encrypt', function(req, res){
     }
 })
 
-router.get('/testosteron', function(req, res) {
-    res.write('naonna we lah');
-})
-
 // =============================================================================
 // all of our routes will be prefixed with /api
 app.use('/api', router);
