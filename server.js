@@ -101,7 +101,7 @@ router.use(function(req, res, next) {
                         res.status(401).send(err);
                     } else {
                         if (verifiedJwt.body.exp > Math.floor(Date.now()/1000)){
-                            if ((verifiedJwt.body.exp-Math.floor(Date.now()/1000)) <= 30) {
+                            if ((verifiedJwt.body.exp-Math.floor(Date.now()/1000)) <= 60*60*2) {
                                 var newToken = getToken(verifiedJwt.body, signingKey);
                                 res.header('token', newToken);
                             }
