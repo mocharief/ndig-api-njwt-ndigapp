@@ -625,7 +625,7 @@ router.route('/piechart/category/:paramcat/filter/:paramwaktu/source/:paramsourc
 
 
 // PIECHART - SUBCATEGORY1 - FILTER - SOURCE 
-// paramSubCat1 = lihat documentCategories.json atau category_summary.ods
+// paramsubcat1 = lihat documentCategories.json atau category_summary.ods
 // paramwaktu = [lastday, lastweek, lastmonth, lastyear]
 // paramsource = [all, news, twitter, intel]
 router.route('/piechart/subcategory1/:paramsubcat1/filter/:paramwaktu/source/:paramsource')
@@ -637,6 +637,19 @@ router.route('/piechart/subcategory1/:paramsubcat1/filter/:paramwaktu/source/:pa
         }, req.params.paramsubcat1, req.params.paramwaktu, req.params.paramsource);
     });
 
+
+// PIECHART - SUBCATEGORY2 - FILTER - SOURCE 
+// paramsubcat2 = lihat documentCategories.json atau category_summary.ods
+// paramwaktu = [lastday, lastweek, lastmonth, lastyear]
+// paramsource = [all, news, twitter, intel]
+router.route('/piechart/subcategory2/:paramsubcat2/filter/:paramwaktu/source/:paramsource')
+    .get(function(req, res) {
+        console.log("Accessing /piechart with subcategory2 " + req.params.paramsubcat2 + " and filter " + req.params.paramwaktu + " and source " + req.params.paramsource); 
+        
+        summ.getPiechartSubcategory2Summary(function(summary) {
+            res.json(summary);
+        }, req.params.paramsubcat2, req.params.paramwaktu, req.params.paramsource);
+    });
 
 
 // PIECHART - THREATLEVEL - FILTER - SOURCE 

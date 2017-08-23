@@ -392,7 +392,6 @@ module.exports = function(AnalysedInfo){
 
 	getPiechartSubcategory1Data = function(subcategories2, fn, paramSubCat1, paramwaktu, paramsource)
 	{
-		console.log(subcategories2);
 		var nPrev;
 		if (paramwaktu == "lastday"){nPrev=1};
 		if (paramwaktu == "lastweek"){nPrev=7};
@@ -489,6 +488,56 @@ module.exports = function(AnalysedInfo){
 			}
 		}  
 	}
+
+	getPiechartSubcategory2Summary = function (fn, paramSubCat2, paramwaktu, paramsource){
+		console.log("getPiechartSubcategory2Summary " + paramSubCat2 + " " + paramwaktu + " " + paramsource);
+		summArr.length = 0;
+
+		var nPrev;
+		if (paramwaktu == "lastday"){nPrev=1};
+		if (paramwaktu == "lastweek"){nPrev=7};
+		if (paramwaktu == "lastmonth"){nPrev=30};
+		if (paramwaktu == "lastyear"){nPrev=365};
+		var thePrevDate = util.getNPrevDate(nPrev);
+
+		var newSumm = new Object();
+		// just get the categoryMain data
+		if (paramsource == "all"){
+			AnalysedInfo.find({
+				$and: [
+					{'categorySub2' : paramSubCat2},
+					{'eventDateDate': {$gte: thePrevDate}}
+				]
+			}, function (err, info) {
+				if (err)
+					fn(err);
+
+				newSumm.category = paramSubCat2;
+				newSumm.amount = info.length;
+				summArr.push(newSumm);
+
+				fn(summArr);
+			});
+		} 
+		else {
+			AnalysedInfo.find({
+				$and: [
+					{'categorySub2' : paramSubCat2},
+					{'dataSource': paramsource},
+					{'eventDateDate': {$gte: thePrevDate}} //sama dengan date.month bulan ini
+				]
+			}, function (err, info) {
+				if (err)
+					fn(err);
+
+				newSumm.category = paramSubCat2;
+				newSumm.amount = info.length;
+				summArr.push(newSumm);
+
+				fn(summArr);
+			});
+		}
+	} 
 
 	getPiechartThreatSummary = function (fn, paramLev, paramwaktu, paramsource){
 		console.log("getPiechartThreatSummary " + paramLev + " " + paramwaktu + " " + paramsource);
@@ -764,6 +813,9 @@ module.exports = function(AnalysedInfo){
 		},
 		getPiechartSubcategory1Summary : function(fn, paramSubCat1, paramwaktu, paramsource){
 			getPiechartSubcategory1Summary(fn, paramSubCat1, paramwaktu, paramsource);
+		},
+		getPiechartSubcategory2Summary : function(fn, paramSubCat2, paramwaktu, paramsource){
+			getPiechartSubcategory2Summary(fn, paramSubCat2, paramwaktu, paramsource);
 		},
 		getPiechartThreatSummary : function(fn, paramLev, paramwaktu, paramsource){
 			getPiechartThreatSummary(fn, paramLev, paramwaktu, paramsource);
