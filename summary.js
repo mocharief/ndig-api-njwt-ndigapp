@@ -7,7 +7,6 @@ module.exports = function(AnalysedInfo){
 	var util = require('./util.js');
 
 	// ada double disini, dihandle nanti lagi
-	var kategori = require("./data/documentCategories.json");
 	var DocumentCategories    = require('./app/models/documentcategories');
 
 	getProvinceSummary = function (fn){
@@ -131,59 +130,60 @@ module.exports = function(AnalysedInfo){
 
 	getProvCatSummary = function(provinces, fn)
 	{
-		async.each(provinces, function(province , eachcallback)
-		{
-			var newSumm = new Object();
-			var catList = new Array();
+		DocumentCategories.find({}, function (err, documentcategories) {
+			async.each(provinces, function(province , eachcallback)
+			{
+				var newSumm = new Object();
+				var catList = new Array();
 
-			// iterate the array of kategori
-			async.each(kategori, function(kat, katcallback) {
-				// Perform operation on file here.
-				// console.log('Processing category ' + kat);
-				AnalysedInfo.find({$and:[{"eventDaerahTk1" : province},{"categoryMain": kat.main.name}]}, function(err, data) {
-					if (err)
-						res.send(err);
+				// iterate the array of documentcategories
+				async.each(documentcategories, function(kat, katcallback) {
+					// Perform operation on file here.
+					AnalysedInfo.find({$and:[{"eventDaerahTk1" : province},{"categoryMain": kat.name}]}, function(err, data) {
+						if (err)
+							res.send(err);
 
-					var catSum = new Object();
-					catSum.name = kat.main.name;
-					catSum.n = data.length;
+						var catSum = new Object();
+						catSum.name = kat.name;
+						catSum.n = data.length;
 
-					catList.push(catSum);
+						catList.push(catSum);
 
-					katcallback();
+						katcallback();
+					});
+				}, 
+				function(err) {
+					// if any of the file processing produced an error, err would equal that error
+					if( err ) {
+					  // One of the iterations produced an error.
+					  // All processing will now stop.
+					  console.log('Something wrong when processing category query');
+					}
+
+					AnalysedInfo
+					.where('eventDaerahTk1', province)
+					.select('eventLat eventLon') 		// hanya mengambil field eventLat dan eventLon
+					.limit(1)
+					.exec(function (err, docs) {
+						newSumm.lokasi = province;
+						newSumm.lat = docs[0].eventLat;
+						newSumm.lon = docs[0].eventLon;
+						newSumm.category = catList;
+
+						summArr.push(newSumm);
+					
+						// tell the each async that the operation for each item is finished
+						eachcallback();
+					});
 				});
+
 			}, 
-			function(err) {
-				// if any of the file processing produced an error, err would equal that error
-				if( err ) {
-				  // One of the iterations produced an error.
-				  // All processing will now stop.
-				  console.log('Something wrong when processing category query');
-				}
-
-				AnalysedInfo
-				.where('eventDaerahTk1', province)
-				.select('eventLat eventLon') 		// hanya mengambil field eventLat dan eventLon
-				.limit(1)
-				.exec(function (err, docs) {
-					newSumm.lokasi = province;
-					newSumm.lat = docs[0].eventLat;
-					newSumm.lon = docs[0].eventLon;
-					newSumm.category = catList;
-
-					summArr.push(newSumm);
-				
-					// tell the each async that the operation for each item is finished
-					eachcallback();
-				});
+			function(err){
+				if (err)
+					fn(err);
+				else
+					fn(summArr);
 			});
-
-		}, 
-		function(err){
-			if (err)
-				fn(err);
-			else
-				fn(summArr);
 		});
 	}
 
