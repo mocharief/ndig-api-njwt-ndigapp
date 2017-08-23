@@ -43,14 +43,14 @@ var router = express.Router();              // get an instance of the express Ro
 
 // middleware to use for all requests
 router.use(function(req, res, next) {
-    // do logging
-    console.log('---Something is happening---', req.params);
-    next(); // make sure we go to the next routes and don't stop here
+	// do logging
+	console.log('---Something is happening---', req.params);
+	next(); // make sure we go to the next routes and don't stop here
 });
 
 // test route to make sure everything is working (accessed at GET http://localhost:8080/api)
 router.get('/', function(req, res) {
-    res.json({ message: 'heeloww! welcome to our api!' });   
+	res.json({ message: 'heeloww! welcome to our api!' });   
 });
 
 // ROUTING NDIG START HERE
@@ -65,93 +65,93 @@ router.get('/', function(req, res) {
 router.route('/rawpesans')
 
 // A1. menyimpan pesan k DB
-    .post(function(req, res) {        
-        var pesan = new Pesan();      // create a new instance of the Pesan model
-        pesan.dari      = req.body.dari;  // ngisi param
-        pesan.type      = req.body.type;
-        pesan.date      = req.body.date;
-        pesan.category  = req.body.category;
-        pesan.laporan   = req.body.pesan;
+	.post(function(req, res) {        
+		var pesan = new Pesan();      // create a new instance of the Pesan model
+		pesan.dari      = req.body.dari;  // ngisi param
+		pesan.type      = req.body.type;
+		pesan.date      = req.body.date;
+		pesan.category  = req.body.category;
+		pesan.laporan   = req.body.pesan;
 
-        // save the pesan and check for errors
-        pesan.save(function(err, pesan) {
-            if (err)
-                res.send(err);
-            res.json({ message: 'pesan '+pesan+' berhasil digenerate!' });
-        });
-    })
+		// save the pesan and check for errors
+		pesan.save(function(err, pesan) {
+			if (err)
+				res.send(err);
+			res.json({ message: 'pesan '+pesan+' berhasil digenerate!' });
+		});
+	})
 
 // A2. mengakses semua pesan
-    .get(function(req, res) {
-        Pesan.find(function(err, pesans) {
-            if (err)
-                res.send(err);
-            res.json(pesans);
-        });
-    });
+	.get(function(req, res) {
+		Pesan.find(function(err, pesans) {
+			if (err)
+				res.send(err);
+			res.json(pesans);
+		});
+	});
 
 
 // -------------------------------------------------------------------
 // B. mengakses pesan intel tertentu:
 // B1. berdasarkan pengirim
 router.route('/rawpesans/dari/:nama')
-    .get(function(req, res) {
-        Pesan.find({ 'dari': {$regex:req.params.nama, $options: 'i'}}, function (err, pesan) {
-            if (err)
-                res.send(err);
-            res.json(pesan);
-        });
-    })
+	.get(function(req, res) {
+		Pesan.find({ 'dari': {$regex:req.params.nama, $options: 'i'}}, function (err, pesan) {
+			if (err)
+				res.send(err);
+			res.json(pesan);
+		});
+	})
 
 // B2. berdasarkan type
 router.route('/rawpesans/type/:tipe')
-    .get(function(req, res) {
-        Pesan.find({ 'type': req.params.tipe}, function (err, pesan) {
-            if (err)
-                res.send(err);
-            res.json(pesan);
-        });
-    })
+	.get(function(req, res) {
+		Pesan.find({ 'type': req.params.tipe}, function (err, pesan) {
+			if (err)
+				res.send(err);
+			res.json(pesan);
+		});
+	})
 
 // B3. berdasarkan id tertentu
 router.route('/rawpesans/:pesan_id')
-    .get(function(req, res) {
-        Pesan.findById(req.params.pesan_id, function(err, pesan) {
-            if (err)
-                res.send(err);
-            res.json(pesan);
-        });
-    })
+	.get(function(req, res) {
+		Pesan.findById(req.params.pesan_id, function(err, pesan) {
+			if (err)
+				res.send(err);
+			res.json(pesan);
+		});
+	})
 
    .put(function(req, res) {
-        Pesan.findById(req.params.pesan_id, function(err, pesan) {
-            if (err)
-                res.send(err);
+		Pesan.findById(req.params.pesan_id, function(err, pesan) {
+			if (err)
+				res.send(err);
 
-            // update the pesan 
-            pesan.dari      = pesan.dari;  // ngisi param
-            pesan.type      = pesan.type;
-            pesan.date      = pesan.date;
-            pesan.category  = pesan.category;
-            pesan.laporan   = pesan.laporan;
-            pesan.lokasi    = req.body.lokasi;
+			// update the pesan 
+			pesan.dari      = pesan.dari;  // ngisi param
+			pesan.type      = pesan.type;
+			pesan.date      = pesan.date;
+			pesan.category  = pesan.category;
+			pesan.laporan   = pesan.laporan;
+			pesan.lokasi    = req.body.lokasi;
 
-            // var pesan = new Pesan();      // create a new instance of the Pesan model
-            // pesan.dari      = req.body.dari;  // ngisi param
-            // pesan.type      = req.body.type;
-            // pesan.date      = req.body.date;
-            // pesan.category  = req.body.category;
-            // pesan.laporan   = req.body.pesan;
+			// var pesan = new Pesan();      // create a new instance of the Pesan model
+			// pesan.dari      = req.body.dari;  // ngisi param
+			// pesan.type      = req.body.type;
+			// pesan.date      = req.body.date;
+			// pesan.category  = req.body.category;
+			// pesan.laporan   = req.body.pesan;
 
 
-            // save the pesan
-            pesan.save(function(err) {
-                if (err)
-                    res.send(err);
-                res.json({ message: 'Pesan updated!' });
-            });
-        });
-    })
+			// save the pesan
+			pesan.save(function(err) {
+				if (err)
+					res.send(err);
+				res.json({ message: 'Pesan updated!' });
+			});
+		});
+	})
 
 
 // B4. berdasarkan date tertentu
@@ -169,31 +169,31 @@ router.route('/rawpesans/:pesan_id')
 
 // B4.5 berdasarkan filter param date
 router.route('/rawpesans/filter/:paramwaktu')
-    .get(function(req, res) {
-        var nPrev;
-        if (req.params.paramwaktu == "lastday"){nPrev=1};
-        if (req.params.paramwaktu == "lastweek"){nPrev=7};
-        if (req.params.paramwaktu == "lastmonth"){nPrev=30};
-        if (req.params.paramwaktu == "lastyear"){nPrev=365};
-        var thePrevDate = util.getNPrevDate(nPrev);
-        
-        Pesan.find({'date': {$gte: thePrevDate}}, function(err, pesan) {
-            if (err)
-                res.send(err);
+	.get(function(req, res) {
+		var nPrev;
+		if (req.params.paramwaktu == "lastday"){nPrev=1};
+		if (req.params.paramwaktu == "lastweek"){nPrev=7};
+		if (req.params.paramwaktu == "lastmonth"){nPrev=30};
+		if (req.params.paramwaktu == "lastyear"){nPrev=365};
+		var thePrevDate = util.getNPrevDate(nPrev);
+		
+		Pesan.find({'date': {$gte: thePrevDate}}, function(err, pesan) {
+			if (err)
+				res.send(err);
 
-            res.json(pesan);
-        });
-    })
+			res.json(pesan);
+		});
+	})
 
 // B5. berdasarkan isi pesan (ANALISIS ISI PESAN INTEL)
 router.route('/rawpesans/isi/:pesan')
-    .get(function(req, res) {
-        Pesan.find({ 'pesan': {$regex:req.params.pesan, $options: 'i'}}, function (err, pesan) {
-            if (err)
-                res.send(err);
-            res.json(pesan);
-        });
-    })
+	.get(function(req, res) {
+		Pesan.find({ 'pesan': {$regex:req.params.pesan, $options: 'i'}}, function (err, pesan) {
+			if (err)
+				res.send(err);
+			res.json(pesan);
+		});
+	})
 
 
 // -------------------------------------------------------------------
@@ -243,28 +243,28 @@ router.route('/rawpesans/isi/:pesan')
 // mengakses semua twitter dan menyimpan twitter
 router.route('/rawtwitters')
    .post(function(req, res) {        
-        var twitter = new Twitter();      // create a new instance of the Pesan model
-        twitter.user        = req.body.user;  // ngisi param
-        twitter.location    = req.body.location;
-        twitter.geolocation = req.body.geolocation;
-        twitter.date        = req.body.date;
-        twitter.tweet       = req.body.tweet;
+		var twitter = new Twitter();      // create a new instance of the Pesan model
+		twitter.user        = req.body.user;  // ngisi param
+		twitter.location    = req.body.location;
+		twitter.geolocation = req.body.geolocation;
+		twitter.date        = req.body.date;
+		twitter.tweet       = req.body.tweet;
 
-        // save the pesan and check for errors
-        twitter.save(function(err, twit) {
-            if (err)
-                res.send(err);
-            res.json({ message: 'tweet '+twit+' berhasil digenerate!' });
-        });
-    })
+		// save the pesan and check for errors
+		twitter.save(function(err, twit) {
+			if (err)
+				res.send(err);
+			res.json({ message: 'tweet '+twit+' berhasil digenerate!' });
+		});
+	})
 
-    .get(function(req, res) {
-        Twitter.find(function(err, twit) {
-            if (err)
-                res.send(err);
-            res.json(twit);
-        });
-    });
+	.get(function(req, res) {
+		Twitter.find(function(err, twit) {
+			if (err)
+				res.send(err);
+			res.json(twit);
+		});
+	});
 
 
 
@@ -321,49 +321,49 @@ router.route('/rawtwitters')
 
 // A1. mengakses semua analysed info (hasil analisa dias)
 router.route('/analysedinfo')
-    .get(function(req, res) {
-        // var intel = new Intel();      // create a new instance of the Intel model
-        AnalysedInfo.find(function(err, news) {
-            if (err)
-                res.send(err);
+	.get(function(req, res) {
+		// var intel = new Intel();      // create a new instance of the Intel model
+		AnalysedInfo.find(function(err, news) {
+			if (err)
+				res.send(err);
 
-            res.json(news);
-        });
-    });
+			res.json(news);
+		});
+	});
 
 
 // A2. DASHBOARD - FILTER - SOURCE 
 // paramsource = [all, news, twitter, intel]
 // paramwaktu = [lastday, lastweek, lastmonth, lastyear]
 router.route('/analysedinfo/filter/:paramwaktu/source/:paramsource')
-    .get(function(req, res) {
-        var nPrev;
-        if (req.params.paramwaktu == "lastday"){nPrev=1};
-        if (req.params.paramwaktu == "lastweek"){nPrev=7};
-        if (req.params.paramwaktu == "lastmonth"){nPrev=30};
-        if (req.params.paramwaktu == "lastyear"){nPrev=365};
-        var thePrevDate = util.getNPrevDate(nPrev);
-        
-        if (req.params.paramsource == "all"){
-            AnalysedInfo.find({'eventDateDate': {$gte: thePrevDate}}, function (err, info) {
-                if (err)
-                    res.send(err);
-                res.json(info);
-            });
-        } 
-        else {
-            AnalysedInfo.find({
-                $and: [
-                      {'dataSource': req.params.paramsource},
-                      {'eventDateDate': {$gte: thePrevDate}} //sama dengan date.month bulan ini
-                ]
-            }, function (err, info) {
-                if (err)
-                    res.send(err);
-                res.json(info);
-            });
-        }
-    });
+	.get(function(req, res) {
+		var nPrev;
+		if (req.params.paramwaktu == "lastday"){nPrev=1};
+		if (req.params.paramwaktu == "lastweek"){nPrev=7};
+		if (req.params.paramwaktu == "lastmonth"){nPrev=30};
+		if (req.params.paramwaktu == "lastyear"){nPrev=365};
+		var thePrevDate = util.getNPrevDate(nPrev);
+		
+		if (req.params.paramsource == "all"){
+			AnalysedInfo.find({'eventDateDate': {$gte: thePrevDate}}, function (err, info) {
+				if (err)
+					res.send(err);
+				res.json(info);
+			});
+		} 
+		else {
+			AnalysedInfo.find({
+				$and: [
+					  {'dataSource': req.params.paramsource},
+					  {'eventDateDate': {$gte: thePrevDate}} //sama dengan date.month bulan ini
+				]
+			}, function (err, info) {
+				if (err)
+					res.send(err);
+				res.json(info);
+			});
+		}
+	});
 
 
 // A3. CATEGORY - FILTER - SOURCE 
@@ -380,40 +380,40 @@ router.route('/analysedinfo/filter/:paramwaktu/source/:paramsource')
 //     });
 
 router.route('/analysedinfo/category/:paramcat/filter/:paramwaktu/source/:paramsource')
-    .get(function(req, res) {
-        var nPrev;
-        if (req.params.paramwaktu == "lastday"){nPrev=1};
-        if (req.params.paramwaktu == "lastweek"){nPrev=7};
-        if (req.params.paramwaktu == "lastmonth"){nPrev=30};
-        if (req.params.paramwaktu == "lastyear"){nPrev=365};
-        var thePrevDate = util.getNPrevDate(nPrev);
-        
-        if (req.params.paramsource == "all"){
-            AnalysedInfo.find({
-                $and: [
-                      {'categoryMain': req.params.paramcat},
-                      {'eventDateDate': {$gte: thePrevDate}} //sama dengan date.month bulan ini
-                ]
-            }, function (err, info) {
-                if (err)
-                    res.send(err);
-                res.json(info);
-            });
-        } 
-        else {
-            AnalysedInfo.find({
-                $and: [
-                      {'categoryMain': req.params.paramcat},
-                      {'dataSource': req.params.paramsource},
-                      {'eventDateDate': {$gte: thePrevDate}} //sama dengan date.month bulan ini
-                ]
-            }, function (err, info) {
-                if (err)
-                    res.send(err);
-                res.json(info);
-            });
-        }
-    });
+	.get(function(req, res) {
+		var nPrev;
+		if (req.params.paramwaktu == "lastday"){nPrev=1};
+		if (req.params.paramwaktu == "lastweek"){nPrev=7};
+		if (req.params.paramwaktu == "lastmonth"){nPrev=30};
+		if (req.params.paramwaktu == "lastyear"){nPrev=365};
+		var thePrevDate = util.getNPrevDate(nPrev);
+		
+		if (req.params.paramsource == "all"){
+			AnalysedInfo.find({
+				$and: [
+					  {'categoryMain': req.params.paramcat},
+					  {'eventDateDate': {$gte: thePrevDate}} //sama dengan date.month bulan ini
+				]
+			}, function (err, info) {
+				if (err)
+					res.send(err);
+				res.json(info);
+			});
+		} 
+		else {
+			AnalysedInfo.find({
+				$and: [
+					  {'categoryMain': req.params.paramcat},
+					  {'dataSource': req.params.paramsource},
+					  {'eventDateDate': {$gte: thePrevDate}} //sama dengan date.month bulan ini
+				]
+			}, function (err, info) {
+				if (err)
+					res.send(err);
+				res.json(info);
+			});
+		}
+	});
 
 
 // A4. THREATLEVEL - FILTER - SOURCE 
@@ -429,40 +429,40 @@ router.route('/analysedinfo/category/:paramcat/filter/:paramwaktu/source/:params
 //     });
 
 router.route('/analysedinfo/threatlevel/:paramlev/filter/:paramwaktu/source/:paramsource')
-    .get(function(req, res) {
-        var nPrev;
-        if (req.params.paramwaktu == "lastday"){nPrev=1};
-        if (req.params.paramwaktu == "lastweek"){nPrev=7};
-        if (req.params.paramwaktu == "lastmonth"){nPrev=30};
-        if (req.params.paramwaktu == "lastyear"){nPrev=365};
-        var thePrevDate = util.getNPrevDate(nPrev);
-        
-        if (req.params.paramsource == "all"){
-            AnalysedInfo.find({
-                $and: [
-                      {'threatWarning': req.params.paramlev},
-                      {'eventDateDate': {$gte: thePrevDate}} //sama dengan date.month bulan ini
-                ]
-            }, function (err, info) {
-                if (err)
-                    res.send(err);
-                res.json(info);
-            });
-        } 
-        else {
-            AnalysedInfo.find({
-                $and: [
-                      {'threatWarning': req.params.paramlev},
-                      {'dataSource': req.params.paramsource},
-                      {'eventDateDate': {$gte: thePrevDate}} //sama dengan date.month bulan ini
-                ]
-            }, function (err, info) {
-                if (err)
-                    res.send(err);
-                res.json(info);
-            });
-        }
-    });
+	.get(function(req, res) {
+		var nPrev;
+		if (req.params.paramwaktu == "lastday"){nPrev=1};
+		if (req.params.paramwaktu == "lastweek"){nPrev=7};
+		if (req.params.paramwaktu == "lastmonth"){nPrev=30};
+		if (req.params.paramwaktu == "lastyear"){nPrev=365};
+		var thePrevDate = util.getNPrevDate(nPrev);
+		
+		if (req.params.paramsource == "all"){
+			AnalysedInfo.find({
+				$and: [
+					  {'threatWarning': req.params.paramlev},
+					  {'eventDateDate': {$gte: thePrevDate}} //sama dengan date.month bulan ini
+				]
+			}, function (err, info) {
+				if (err)
+					res.send(err);
+				res.json(info);
+			});
+		} 
+		else {
+			AnalysedInfo.find({
+				$and: [
+					  {'threatWarning': req.params.paramlev},
+					  {'dataSource': req.params.paramsource},
+					  {'eventDateDate': {$gte: thePrevDate}} //sama dengan date.month bulan ini
+				]
+			}, function (err, info) {
+				if (err)
+					res.send(err);
+				res.json(info);
+			});
+		}
+	});
 
 
 // A5. SUBCATEGORY1 - FILTER - SOURCE 
@@ -479,40 +479,40 @@ router.route('/analysedinfo/threatlevel/:paramlev/filter/:paramwaktu/source/:par
 //     });
 
 router.route('/analysedinfo/subcategory1/:paramcat/filter/:paramwaktu/source/:paramsource')
-    .get(function(req, res) {
-        var nPrev;
-        if (req.params.paramwaktu == "lastday"){nPrev=1};
-        if (req.params.paramwaktu == "lastweek"){nPrev=7};
-        if (req.params.paramwaktu == "lastmonth"){nPrev=30};
-        if (req.params.paramwaktu == "lastyear"){nPrev=365};
-        var thePrevDate = util.getNPrevDate(nPrev);
-        
-        if (req.params.paramsource == "all"){
-            AnalysedInfo.find({
-                $and: [
-                      {'categorySub1': req.params.paramcat},
-                      {'eventDateDate': {$gte: thePrevDate}} //sama dengan date.month bulan ini
-                ]
-            }, function (err, info) {
-                if (err)
-                    res.send(err);
-                res.json(info);
-            });
-        } 
-        else {
-            AnalysedInfo.find({
-                $and: [
-                      {'categorySub1': req.params.paramcat},
-                      {'dataSource': req.params.paramsource},
-                      {'eventDateDate': {$gte: thePrevDate}} //sama dengan date.month bulan ini
-                ]
-            }, function (err, info) {
-                if (err)
-                    res.send(err);
-                res.json(info);
-            });
-        }
-    });
+	.get(function(req, res) {
+		var nPrev;
+		if (req.params.paramwaktu == "lastday"){nPrev=1};
+		if (req.params.paramwaktu == "lastweek"){nPrev=7};
+		if (req.params.paramwaktu == "lastmonth"){nPrev=30};
+		if (req.params.paramwaktu == "lastyear"){nPrev=365};
+		var thePrevDate = util.getNPrevDate(nPrev);
+		
+		if (req.params.paramsource == "all"){
+			AnalysedInfo.find({
+				$and: [
+					  {'categorySub1': req.params.paramcat},
+					  {'eventDateDate': {$gte: thePrevDate}} //sama dengan date.month bulan ini
+				]
+			}, function (err, info) {
+				if (err)
+					res.send(err);
+				res.json(info);
+			});
+		} 
+		else {
+			AnalysedInfo.find({
+				$and: [
+					  {'categorySub1': req.params.paramcat},
+					  {'dataSource': req.params.paramsource},
+					  {'eventDateDate': {$gte: thePrevDate}} //sama dengan date.month bulan ini
+				]
+			}, function (err, info) {
+				if (err)
+					res.send(err);
+				res.json(info);
+			});
+		}
+	});
 
 
 // A6. SUBCATEGORY2 - FILTER - SOURCE 
@@ -529,40 +529,40 @@ router.route('/analysedinfo/subcategory1/:paramcat/filter/:paramwaktu/source/:pa
 //     });
 
 router.route('/analysedinfo/subcategory2/:paramcat/filter/:paramwaktu/source/:paramsource')
-    .get(function(req, res) {
-        var nPrev;
-        if (req.params.paramwaktu == "lastday"){nPrev=1};
-        if (req.params.paramwaktu == "lastweek"){nPrev=7};
-        if (req.params.paramwaktu == "lastmonth"){nPrev=30};
-        if (req.params.paramwaktu == "lastyear"){nPrev=365};
-        var thePrevDate = util.getNPrevDate(nPrev);
-        
-        if (req.params.paramsource == "all"){
-            AnalysedInfo.find({
-                $and: [
-                      {'categorySub2': req.params.paramcat},
-                      {'eventDateDate': {$gte: thePrevDate}} //sama dengan date.month bulan ini
-                ]
-            }, function (err, info) {
-                if (err)
-                    res.send(err);
-                res.json(info);
-            });
-        } 
-        else {
-            AnalysedInfo.find({
-                $and: [
-                      {'categorySub2': req.params.paramcat},
-                      {'dataSource': req.params.paramsource},
-                      {'eventDateDate': {$gte: thePrevDate}} //sama dengan date.month bulan ini
-                ]
-            }, function (err, info) {
-                if (err)
-                    res.send(err);
-                res.json(info);
-            });
-        }
-    });
+	.get(function(req, res) {
+		var nPrev;
+		if (req.params.paramwaktu == "lastday"){nPrev=1};
+		if (req.params.paramwaktu == "lastweek"){nPrev=7};
+		if (req.params.paramwaktu == "lastmonth"){nPrev=30};
+		if (req.params.paramwaktu == "lastyear"){nPrev=365};
+		var thePrevDate = util.getNPrevDate(nPrev);
+		
+		if (req.params.paramsource == "all"){
+			AnalysedInfo.find({
+				$and: [
+					  {'categorySub2': req.params.paramcat},
+					  {'eventDateDate': {$gte: thePrevDate}} //sama dengan date.month bulan ini
+				]
+			}, function (err, info) {
+				if (err)
+					res.send(err);
+				res.json(info);
+			});
+		} 
+		else {
+			AnalysedInfo.find({
+				$and: [
+					  {'categorySub2': req.params.paramcat},
+					  {'dataSource': req.params.paramsource},
+					  {'eventDateDate': {$gte: thePrevDate}} //sama dengan date.month bulan ini
+				]
+			}, function (err, info) {
+				if (err)
+					res.send(err);
+				res.json(info);
+			});
+		}
+	});
 
 
 
@@ -574,21 +574,21 @@ router.route('/analysedinfo/subcategory2/:paramcat/filter/:paramwaktu/source/:pa
 
 // mengakses summari analysed info tiap provinsi
 router.route('/threatsummary')
-    .get(function(req, res) {
-        console.log("Accessing /threatsummary");
-        summ.getProvinceSummary(function(summary) {
-            res.json(summary);
-        });
-    });
+	.get(function(req, res) {
+		console.log("Accessing /threatsummary");
+		summ.getProvinceSummary(function(summary) {
+			res.json(summary);
+		});
+	});
 
 // mengakses summari category dari analysed info tiap provinsi
 router.route('/categorysummary')
-    .get(function(req, res) {
-        console.log("Accessing /categorysummary");
-        summ.getCategorySummary(function(summary) {
-            res.json(summary);
-        });
-    });
+	.get(function(req, res) {
+		console.log("Accessing /categorysummary");
+		summ.getCategorySummary(function(summary) {
+			res.json(summary);
+		});
+	});
 
 
 
@@ -602,12 +602,12 @@ router.route('/categorysummary')
 // paramwaktu = [lastday, lastweek, lastmonth, lastyear]
 // paramsource = [all, news, twitter, intel]
 router.route('/piechart/filter/:paramwaktu/source/:paramsource')
-    .get(function(req, res) {
-        console.log("Accessing /piechart with filter " + req.params.paramwaktu + " and source " + req.params.paramsource); 
-        summ.getPiechartSummary(function(summary) {
-            res.json(summary);
-        }, req.params.paramwaktu, req.params.paramsource);
-    });
+	.get(function(req, res) {
+		console.log("Accessing /piechart with filter " + req.params.paramwaktu + " and source " + req.params.paramsource); 
+		summ.getPiechartSummary(function(summary) {
+			res.json(summary);
+		}, req.params.paramwaktu, req.params.paramsource);
+	});
 
 
 // PIECHART - CATEGORY - FILTER - SOURCE 
@@ -615,13 +615,13 @@ router.route('/piechart/filter/:paramwaktu/source/:paramsource')
 // paramwaktu = [lastday, lastweek, lastmonth, lastyear]
 // paramsource = [all, news, twitter, intel]
 router.route('/piechart/category/:paramcat/filter/:paramwaktu/source/:paramsource')
-    .get(function(req, res) {
-        console.log("Accessing /piechart with category " + req.params.paramcat + " and filter " + req.params.paramwaktu + " and source " + req.params.paramsource);
+	.get(function(req, res) {
+		console.log("Accessing /piechart with category " + req.params.paramcat + " and filter " + req.params.paramwaktu + " and source " + req.params.paramsource);
 
-        summ.getPiechartCategorySummary(function(summary) {
-            res.json(summary);
-        }, req.params.paramcat, req.params.paramwaktu, req.params.paramsource);
-    });
+		summ.getPiechartCategorySummary(function(summary) {
+			res.json(summary);
+		}, req.params.paramcat, req.params.paramwaktu, req.params.paramsource);
+	});
 
 
 // PIECHART - SUBCATEGORY1 - FILTER - SOURCE 
@@ -629,13 +629,13 @@ router.route('/piechart/category/:paramcat/filter/:paramwaktu/source/:paramsourc
 // paramwaktu = [lastday, lastweek, lastmonth, lastyear]
 // paramsource = [all, news, twitter, intel]
 router.route('/piechart/subcategory1/:paramsubcat1/filter/:paramwaktu/source/:paramsource')
-    .get(function(req, res) {
-        console.log("Accessing /piechart with subcategory1 " + req.params.paramsubcat1 + " and filter " + req.params.paramwaktu + " and source " + req.params.paramsource); 
-        
-        summ.getPiechartSubcategory1Summary(function(summary) {
-            res.json(summary);
-        }, req.params.paramsubcat1, req.params.paramwaktu, req.params.paramsource);
-    });
+	.get(function(req, res) {
+		console.log("Accessing /piechart with subcategory1 " + req.params.paramsubcat1 + " and filter " + req.params.paramwaktu + " and source " + req.params.paramsource); 
+		
+		summ.getPiechartSubcategory1Summary(function(summary) {
+			res.json(summary);
+		}, req.params.paramsubcat1, req.params.paramwaktu, req.params.paramsource);
+	});
 
 
 // PIECHART - SUBCATEGORY2 - FILTER - SOURCE 
@@ -643,13 +643,13 @@ router.route('/piechart/subcategory1/:paramsubcat1/filter/:paramwaktu/source/:pa
 // paramwaktu = [lastday, lastweek, lastmonth, lastyear]
 // paramsource = [all, news, twitter, intel]
 router.route('/piechart/subcategory2/:paramsubcat2/filter/:paramwaktu/source/:paramsource')
-    .get(function(req, res) {
-        console.log("Accessing /piechart with subcategory2 " + req.params.paramsubcat2 + " and filter " + req.params.paramwaktu + " and source " + req.params.paramsource); 
-        
-        summ.getPiechartSubcategory2Summary(function(summary) {
-            res.json(summary);
-        }, req.params.paramsubcat2, req.params.paramwaktu, req.params.paramsource);
-    });
+	.get(function(req, res) {
+		console.log("Accessing /piechart with subcategory2 " + req.params.paramsubcat2 + " and filter " + req.params.paramwaktu + " and source " + req.params.paramsource); 
+		
+		summ.getPiechartSubcategory2Summary(function(summary) {
+			res.json(summary);
+		}, req.params.paramsubcat2, req.params.paramwaktu, req.params.paramsource);
+	});
 
 
 // PIECHART - THREATLEVEL - FILTER - SOURCE 
@@ -657,12 +657,12 @@ router.route('/piechart/subcategory2/:paramsubcat2/filter/:paramwaktu/source/:pa
 // paramwaktu = [lastday, lastweek, lastmonth, lastyear]
 // paramsource = [all, news, twitter, intel]
 router.route('/piechart/threatlevel/:paramlev/filter/:paramwaktu/source/:paramsource')
-    .get(function(req, res) {
-        console.log("Accessing /piechart with threat level " + req.params.paramlev + " and filter " + req.params.paramwaktu + " and source " + req.params.paramsource); 
-        summ.getPiechartThreatSummary(function(summary) {
-            res.json(summary);
-        }, req.params.paramlev, req.params.paramwaktu, req.params.paramsource);
-    });
+	.get(function(req, res) {
+		console.log("Accessing /piechart with threat level " + req.params.paramlev + " and filter " + req.params.paramwaktu + " and source " + req.params.paramsource); 
+		summ.getPiechartThreatSummary(function(summary) {
+			res.json(summary);
+		}, req.params.paramlev, req.params.paramwaktu, req.params.paramsource);
+	});
 
 
 
@@ -676,24 +676,52 @@ router.route('/piechart/threatlevel/:paramlev/filter/:paramwaktu/source/:paramso
 // paramsource = [all, news, twitter, intel]
 // paramwaktu = [lastday, lastweek, lastmonth, lastyear]
 router.route('/linechart/filter/:paramwaktu/source/:paramsource')
-    .get(function(req, res) {
-        console.log("Accessing /linechart with filter " + req.params.paramwaktu + " and source " + req.params.paramsource); 
-        summ.getLinechartSummary(function(summary) {
-            res.json(summary);
-        }, req.params.paramwaktu, req.params.paramsource);
-    });
+	.get(function(req, res) {
+		console.log("Accessing /linechart with filter " + req.params.paramwaktu + " and source " + req.params.paramsource); 
+
+		summ.getLinechartSummary(function(summary) {
+			res.json(summary);
+		}, req.params.paramwaktu, req.params.paramsource);
+	});
 
 
 // LINECHART - CATEGORY - FILTER - SOURCE 
 // paramCat = lihat documentCategories.json
 // paramsource = [all, news, twitter, intel]
 router.route('/linechart/category/:paramcat/filter/:paramwaktu/source/:paramsource')
-    .get(function(req, res) {
-        console.log("Accessing /linechart with category " + req.params.paramcat + " and filter " + req.params.paramwaktu + " and source " + req.params.paramsource); 
-        summ.getLinechartCategorySummary(function(summary) {
-            res.json(summary);
-        }, req.params.paramcat, req.params.paramwaktu, req.params.paramsource);
-    });
+	.get(function(req, res) {
+		console.log("Accessing /linechart with category " + req.params.paramcat + " and filter " + req.params.paramwaktu + " and source " + req.params.paramsource); 
+
+		summ.getLinechartCategorySummary(function(summary) {
+			res.json(summary);
+		}, req.params.paramcat, req.params.paramwaktu, req.params.paramsource);
+	});
+
+
+// LINECHART - SUBCATEGORY1 - FILTER - SOURCE 
+// paramsubcat1 = lihat documentCategories.json atau category_summary.ods
+// paramsource = [all, news, twitter, intel]
+router.route('/linechart/subcategory1/:paramsubcat1/filter/:paramwaktu/source/:paramsource')
+	.get(function(req, res) {
+		console.log("Accessing /linechart with subcategory1 " + req.params.paramsubcat1 + " and filter " + req.params.paramwaktu + " and source " + req.params.paramsource); 
+
+		summ.getLinechartSubcategory1Summary(function(summary) {
+			res.json(summary);
+		}, req.params.paramsubcat1, req.params.paramwaktu, req.params.paramsource);
+	});
+
+
+// LINECHART - SUBCATEGORY1 - FILTER - SOURCE 
+// paramsubcat1 = lihat documentCategories.json atau category_summary.ods
+// paramsource = [all, news, twitter, intel]
+router.route('/linechart/subcategory2/:paramsubcat2/filter/:paramwaktu/source/:paramsource')
+	.get(function(req, res) {
+		console.log("Accessing /linechart with subcategory2 " + req.params.paramsubcat2 + " and filter " + req.params.paramwaktu + " and source " + req.params.paramsource); 
+
+		summ.getLinechartSubcategory2Summary(function(summary) {
+			res.json(summary);
+		}, req.params.paramsubcat2, req.params.paramwaktu, req.params.paramsource);
+	});
 
 
 // LINECHART - THREATLEVEL - FILTER - SOURCE 
@@ -701,12 +729,13 @@ router.route('/linechart/category/:paramcat/filter/:paramwaktu/source/:paramsour
 // paramwaktu = [lastday, lastweek, lastmonth, lastyear]
 // paramsource = [all, news, twitter, intel]
 router.route('/linechart/threatlevel/:paramlev/filter/:paramwaktu/source/:paramsource')
-    .get(function(req, res) {
-        console.log("Accessing /linechart with threat level " + req.params.paramlev + " and filter " + req.params.paramwaktu + " and source " + req.params.paramsource); 
-        summ.getLinechartThreatSummary(function(summary) {
-            res.json(summary);
-        }, req.params.paramlev, req.params.paramwaktu, req.params.paramsource);
-    });
+	.get(function(req, res) {
+		console.log("Accessing /linechart with threat level " + req.params.paramlev + " and filter " + req.params.paramwaktu + " and source " + req.params.paramsource);
+
+		summ.getLinechartThreatSummary(function(summary) {
+			res.json(summary);
+		}, req.params.paramlev, req.params.paramwaktu, req.params.paramsource);
+	});
 
 
 
