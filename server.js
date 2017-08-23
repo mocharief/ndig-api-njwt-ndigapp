@@ -8,7 +8,7 @@ var app         = express();                 // define our app using express
 var bodyParser  = require('body-parser');
 var Pesan       = require('./app/models/pesan');
 var Twitter     = require('./app/models/twitter');
-
+var Newsintel   = require('./app/models/newsintel');
 var AnalysedInfo    = require('./app/models/analysedinfo');
 var summ = require('./summary.js')(AnalysedInfo);
 var util = require('./util.js');
@@ -54,6 +54,52 @@ router.get('/', function(req, res) {
 
 // ROUTING NDIG START HERE
 // =============================================================================
+
+// PESAN INTEL DAN NEWS
+router.route('/newsintel')
+    // A2. mengakses semua pesan
+    .get(function(req, res) {
+        var temp = [];
+        Pesan.find(function(err, pesanasli) {
+            if (err)
+                res.send(err);
+
+            for(i=0; i<pesanasli.length; i++){
+                var pesanmodif = new Newsintel();      // create a new instance of the Pesan model
+                pesanmodif.source       = 'intel';
+                pesanmodif.dari         = pesanasli[i].dari;  
+                pesanmodif.laporan      = pesanasli[i].laporan;           
+                if(pesanasli[i].lokasi)  {pesanmodif.lokasi       = pesanasli[i].lokasi;} else {pesanmodif.lokasi = null;}
+                if(pesanasli[i].category){pesanmodif.category     = pesanasli[i].category;} else {pesanmodif.category = null;}
+                pesanmodif.date         = pesanasli[i].date;
+                pesanmodif.threatlevel  = null;    
+
+                temp.push(pesanmodif);
+            }
+            
+            AnalysedInfo.find(function(err, newsasli) {
+                if (err)
+                    res.send(err);
+
+                for(i=0; i<newsasli.length; i++){
+                    var newsmodif = new Newsintel();      // create a new instance of the Pesan model
+                    newsmodif.source       = newsasli[i].dataSource;
+                    newsmodif.dari         = newsasli[i].contentLocator;  
+                    newsmodif.laporan      = newsasli[i].contentSubject;
+                    if(newsasli[i].eventLat && newsasli[i].eventLon){newsmodif.lokasi = {latitude : newsasli[i].eventLat, longitude : newsasli[i].eventLon};} else {newsmodif.lokasi = null;}
+                    if(newsasli[i].categoryMain && newsasli[i].categorySub1 && newsasli[i].categorySub2)
+                        {newsmodif.category = newsasli[i].categoryMain+','+newsasli[i].categorySub1+','+newsasli[i].categorySub2;} else {newsmodif.category = null;}
+                    newsmodif.date         = newsasli[i].eventDateDate;
+                    newsmodif.threatlevel  = newsasli[i].threatWarning;
+
+                    temp.push(newsmodif);
+                }
+                res.json(temp);
+            });
+        });
+    });
+
+
 
 // -----------------------PESANS-----------------------------
 // -----------------------PESANS-----------------------------
