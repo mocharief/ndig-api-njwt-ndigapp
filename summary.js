@@ -6,7 +6,9 @@ module.exports = function(AnalysedInfo){
 	var summArr = new Array();
 	var util = require('./util.js');
 
+	// ada double disini, dihandle nanti lagi
 	var kategori = require("./data/documentCategories.json");
+	var DocumentCategories    = require('./app/models/documentcategories');
 
 	getProvinceSummary = function (fn){
 		summArr.length = 0;
@@ -266,13 +268,14 @@ module.exports = function(AnalysedInfo){
 		summArr.length = 0;
 
 		// Ambil list subcategory dari maincategory tertentu
-		AnalysedInfo.distinct("categorySub1", {"categoryMain" : paramCat}, function(err, subcategories) {
+		// Tested, the result is just the array of subcategory1 list. Eg Bencana = ["Bencana Alam","Bencana ulah Manusia"]
+		DocumentCategories.distinct("sub1.name", {"name" : paramCat}, function(err, subcategories) { 
 			if (err)
-				res.send(err);
+				fn(err);
 
 			getPiechartCategoryData(subcategories, fn, paramCat, paramwaktu, paramsource);
 		});
-	}
+	} 
 
 	getPiechartCategoryData = function(subcategories, fn, paramCat, paramwaktu, paramsource)
 	{
@@ -299,6 +302,7 @@ module.exports = function(AnalysedInfo){
 					newSumm.category = paramCat;
 					newSumm.amount = info.length;
 					summArr.push(newSumm);
+					fn(summArr);
 				});
 			} 
 			else {
@@ -315,12 +319,11 @@ module.exports = function(AnalysedInfo){
 					newSumm.category = paramCat;
 					newSumm.amount = info.length;
 					summArr.push(newSumm);
+					fn(summArr);
 				});
 			}
-
-			fn(summArr);
-
-		} else if (subcategories.length > 0) {
+		} 
+		else if (subcategories.length > 0) {
 
 			async.each(subcategories, function(subcategory , eachcallback)
 			{
@@ -329,7 +332,7 @@ module.exports = function(AnalysedInfo){
 				if (paramsource == "all"){
 					AnalysedInfo.find({
 						$and: [
-							{'categoryMain' : paramCat},
+							// {'categoryMain' : paramCat},
 							{'categorySub1' : subcategory},
 							{'eventDateDate': {$gte: thePrevDate}}
 						]
@@ -347,7 +350,7 @@ module.exports = function(AnalysedInfo){
 				else {
 					AnalysedInfo.find({
 						$and: [
-							{'categoryMain' : paramCat},
+							// {'categoryMain' : paramCat},
 							{'categorySub1' : subcategory},
 							{'dataSource': paramsource},
 							{'eventDateDate': {$gte: thePrevDate}} //sama dengan date.month bulan ini
@@ -371,6 +374,120 @@ module.exports = function(AnalysedInfo){
 					fn(summArr);
 			});
 		}
+	}
+
+	getPiechartSubcategory1Summary = function (fn, paramSubCat1, paramwaktu, paramsource){
+		console.log("getPiechartSubcategory1Summary " + paramSubCat1 + " " + paramwaktu + " " + paramsource);
+		summArr.length = 0;
+
+		// Ambil list subcategory2 dari subcategory1 tertentu
+		// Tested, the result is like this: Konflik Vertikal = [{"_id":"599a873c9ab6f9041466a7cf","sub1":[{"code":"105.002.000.000","name":"Konflik Vertikal","sub2":[{"code":"105.002.001.000","name":"Demo"},{"code":"105.002.002.000","name":"Kerusuhan"}]}]}]
+		DocumentCategories.find({"sub1.name" : paramSubCat1}, {'sub1.$': 1}, function(err, subcategories2) { // OK, well tested
+			if (err)
+				res.send(err);
+
+			getPiechartSubcategory1Data(subcategories2, fn, paramSubCat1, paramwaktu, paramsource);
+		});
+	} 
+
+	getPiechartSubcategory1Data = function(subcategories2, fn, paramSubCat1, paramwaktu, paramsource)
+	{
+		console.log(subcategories2);
+		var nPrev;
+		if (paramwaktu == "lastday"){nPrev=1};
+		if (paramwaktu == "lastweek"){nPrev=7};
+		if (paramwaktu == "lastmonth"){nPrev=30};
+		if (paramwaktu == "lastyear"){nPrev=365};
+		var thePrevDate = util.getNPrevDate(nPrev);
+
+		if (subcategories2[0].sub1[0].sub2) {
+
+			async.each(subcategories2[0].sub1[0].sub2, function(subcategory2, eachcallback)
+			{
+				var newSumm = new Object();
+				
+				if (paramsource == "all"){
+					AnalysedInfo.find({
+						$and: [
+							{'categorySub2' : subcategory2.name},
+							{'eventDateDate': {$gte: thePrevDate}}
+						]
+					}, function (err, info) {
+						if (err)
+							fn(err);
+
+						newSumm.category = subcategory2.name;
+						newSumm.amount = info.length;
+						summArr.push(newSumm);
+
+						eachcallback();
+					});
+				} 
+				else {
+					AnalysedInfo.find({
+						$and: [
+							{'categorySub2' : subcategory2.name},
+							{'dataSource': paramsource},
+							{'eventDateDate': {$gte: thePrevDate}} //sama dengan date.month bulan ini
+						]
+					}, function (err, info) {
+						if (err)
+							fn(err);
+
+						newSumm.category = subcategory2.name;
+						newSumm.amount = info.length;
+						summArr.push(newSumm);
+
+						eachcallback();
+					});
+				}
+			}, 
+			function(err){
+				if (err)
+					fn(err);
+				else
+					fn(summArr);
+			});
+		}
+		else {
+			var newSumm = new Object();
+			// just get the categoryMain data
+			if (paramsource == "all"){
+				AnalysedInfo.find({
+					$and: [
+						{'categorySub1' : paramSubCat1},
+						{'eventDateDate': {$gte: thePrevDate}}
+					]
+				}, function (err, info) {
+					if (err)
+						fn(err);
+
+					newSumm.category = paramSubCat1;
+					newSumm.amount = info.length;
+					summArr.push(newSumm);
+
+					fn(summArr);
+				});
+			} 
+			else {
+				AnalysedInfo.find({
+					$and: [
+						{'categorySub1' : paramSubCat1},
+						{'dataSource': paramsource},
+						{'eventDateDate': {$gte: thePrevDate}} //sama dengan date.month bulan ini
+					]
+				}, function (err, info) {
+					if (err)
+						fn(err);
+
+					newSumm.category = paramSubCat1;
+					newSumm.amount = info.length;
+					summArr.push(newSumm);
+
+					fn(summArr);
+				});
+			}
+		}  
 	}
 
 	getPiechartThreatSummary = function (fn, paramLev, paramwaktu, paramsource){
@@ -644,6 +761,9 @@ module.exports = function(AnalysedInfo){
 		},
 		getPiechartCategorySummary : function(fn, paramCat, paramwaktu, paramsource){
 			getPiechartCategorySummary(fn, paramCat, paramwaktu, paramsource);
+		},
+		getPiechartSubcategory1Summary : function(fn, paramSubCat1, paramwaktu, paramsource){
+			getPiechartSubcategory1Summary(fn, paramSubCat1, paramwaktu, paramsource);
 		},
 		getPiechartThreatSummary : function(fn, paramLev, paramwaktu, paramsource){
 			getPiechartThreatSummary(fn, paramLev, paramwaktu, paramsource);

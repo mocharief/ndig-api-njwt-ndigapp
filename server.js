@@ -10,6 +10,7 @@ var Pesan       = require('./app/models/pesan');
 var Twitter     = require('./app/models/twitter');
 
 var AnalysedInfo    = require('./app/models/analysedinfo');
+var DocumentCategories    = require('./app/models/documentcategories');
 var summ = require('./summary.js')(AnalysedInfo);
 var util = require('./util.js');
 // var News    = require('./app/models/news');
@@ -611,14 +612,31 @@ router.route('/piechart/filter/:paramwaktu/source/:paramsource')
 
 // PIECHART - CATEGORY - FILTER - SOURCE 
 // paramCat = lihat documentCategories.json
+// paramwaktu = [lastday, lastweek, lastmonth, lastyear]
 // paramsource = [all, news, twitter, intel]
 router.route('/piechart/category/:paramcat/filter/:paramwaktu/source/:paramsource')
     .get(function(req, res) {
-        console.log("Accessing /piechart with category " + req.params.paramcat + " and filter " + req.params.paramwaktu + " and source " + req.params.paramsource); 
+        console.log("Accessing /piechart with category " + req.params.paramcat + " and filter " + req.params.paramwaktu + " and source " + req.params.paramsource);
+
         summ.getPiechartCategorySummary(function(summary) {
             res.json(summary);
         }, req.params.paramcat, req.params.paramwaktu, req.params.paramsource);
     });
+
+
+// PIECHART - SUBCATEGORY1 - FILTER - SOURCE 
+// paramSubCat1 = lihat documentCategories.json atau category_summary.ods
+// paramwaktu = [lastday, lastweek, lastmonth, lastyear]
+// paramsource = [all, news, twitter, intel]
+router.route('/piechart/subcategory1/:paramsubcat1/filter/:paramwaktu/source/:paramsource')
+    .get(function(req, res) {
+        console.log("Accessing /piechart with subcategory1 " + req.params.paramsubcat1 + " and filter " + req.params.paramwaktu + " and source " + req.params.paramsource); 
+        
+        summ.getPiechartSubcategory1Summary(function(summary) {
+            res.json(summary);
+        }, req.params.paramsubcat1, req.params.paramwaktu, req.params.paramsource);
+    });
+
 
 
 // PIECHART - THREATLEVEL - FILTER - SOURCE 
