@@ -75,7 +75,7 @@ router.use(function(req, res, next) {
                     } else {
                         req.body.roleId = verifiedJwt.body.role;
                         if (verifiedJwt.body.exp > Math.floor(Date.now()/1000)){
-                            if ((verifiedJwt.body.exp-Math.floor(Date.now()/1000)) <= 30) {
+                            if ((verifiedJwt.body.exp-Math.floor(Date.now()/1000)) <= 60*60*2) {
                                 var newToken = getToken(verifiedJwt.body, signingKey);
                                 res.header('token', newToken);
                             }
@@ -833,7 +833,7 @@ function getToken(user, secretKey) {
         _id: user._id,
     };
     var jwt = nJwt.create(claims, secretKey);
-    jwt.setExpiration(Date.now() + (60*1000)); //(second * minute * 1000) in milisecond
+    jwt.setExpiration(Date.now() + (60*60*10*1000)); //(second * minute * 1000) in milisecond
     var token = jwt.compact();
     return token;
 }
