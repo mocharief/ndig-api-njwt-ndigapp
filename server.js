@@ -88,8 +88,9 @@ router.route('/newsintel')
                     newsmodif.dari         = newsasli[i].contentLocator;  
                     newsmodif.laporan      = newsasli[i].contentSubject;
                     if(newsasli[i].eventLat && newsasli[i].eventLon){newsmodif.lokasi = {latitude : newsasli[i].eventLat, longitude : newsasli[i].eventLon};} else {newsmodif.lokasi = null;}
-                    if(newsasli[i].categoryMain && newsasli[i].categorySub1 && newsasli[i].categorySub2)
-                        {newsmodif.category = newsasli[i].categoryMain+','+newsasli[i].categorySub1+','+newsasli[i].categorySub2;} else {newsmodif.category = null;}
+                    newsmodif.category = newsasli[i].categoryMain;
+                    if(newsasli[i].categorySub1) {newsmodif.category += ','+newsasli[i].categorySub1;}
+                    if(newsasli[i].categorySub2) {newsmodif.category += ','+newsasli[i].categorySub2;}
                     newsmodif.date         = newsasli[i].eventDateDate;
                     newsmodif.threatlevel  = newsasli[i].threatWarning;
 
