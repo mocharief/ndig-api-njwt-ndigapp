@@ -96,7 +96,7 @@ router.use(function(req, res, next) {
             var token = split[1];
             if(token) {
                 nJwt.verify(token, signingKey, function(err, verifiedJwt) {
-                    req.body.roleId = decoded.body.role
+                    req.body.roleId = verifiedJwt.body.role
                     if (err) {
                         res.status(401).send(err);
                     } else {
