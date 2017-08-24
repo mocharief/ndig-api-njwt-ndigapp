@@ -95,7 +95,7 @@ router.use(function(req, res, next) {
             var split = decryptURI.substr(1).slice(0, -1).split('?token=');
             var token = split[1];
             if(token) {
-                nJwt.verify(token, signingKey, function(err, decoded) {
+                nJwt.verify(token, signingKey, function(err, verifiedJwt) {
                     req.body.roleId = decoded.body.role
                     if (err) {
                         res.status(401).send(err);
@@ -107,7 +107,7 @@ router.use(function(req, res, next) {
                             }
                                 req.url = split[0].substr(4);
                                 req.originalUrl = split[0];
-                                req.decoded = decoded;
+                                req.verifiedJwt = verifiedJwt;
                                 next();
                         } else {
                             res.status(401).send(verifiedJwt);
@@ -808,20 +808,6 @@ router.post('/authenticate', function(req, res){
         }
     });
 });
-
-// function verifyToken(token) {
-//     var verifyedToken = nJwt.verify(token, signingKey);
-//     if (verifyedToken.body.exp > Math.floor(Date.now()/1000)){
-//         if ((verifyedToken.body.exp-Math.floor(Date.now()/1000)) <= 60*60*2) {
-//             var newToken = getToken(verifyedToken.body, signingKey);
-//             return newToken;
-//         } else {
-//             return verifyedToken
-//         }
-//     } else {
-//         return verifyedToken;
-//     }
-// }
 
 // function get token using njwt
 function getToken(user, secretKey) {
