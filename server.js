@@ -40,17 +40,19 @@ app.use(morgan('dev'));
 app.use(cors());
 
 // configure app to use cors
-//var corsOptions = {
-//    port: 9099,
-//    optionsSuccessStatus: 200,
-//}
+var corsOptions = {
+   origin : "http://localhost:9000",
+   allowedHeaders : ["*"],
+   exposedHeaders : ["x-new-jwt"]
+};
 
 // add header
-app.all('/*', function(req, res, next) {
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header("Access-Control-Allow-Headers", "X-Requested-With");
-  next();
-});
+// app.all('/*', function(req, res, next) {
+//   res.header("Access-Control-Allow-Origin", "*");
+//   res.header("Access-Control-Allow-Headers", "X-Requested-With");
+//   next();
+// });
+app.all('/*',cors(corsOptions));
 
 // GLOBAL VARIABEL
 var port = process.env.PORT || 9099;        // set our port
@@ -77,7 +79,7 @@ router.use(function(req, res, next) {
                         if (verifiedJwt.body.exp > Math.floor(Date.now()/1000)){
                             if ((verifiedJwt.body.exp-Math.floor(Date.now()/1000)) <= 60*60*2) {
                                 var newToken = getToken(verifiedJwt.body, signingKey);
-                                res.header('token', newToken);
+                                res.header({ 'x-new-jwt' : newToken });
                             }
                                 next()
                         } else {
@@ -103,7 +105,7 @@ router.use(function(req, res, next) {
                         if (verifiedJwt.body.exp > Math.floor(Date.now()/1000)){
                             if ((verifiedJwt.body.exp-Math.floor(Date.now()/1000)) <= 60*60*2) {
                                 var newToken = getToken(verifiedJwt.body, signingKey);
-                                res.header('token', newToken);
+                                res.header({ 'x-new-jwt' : newToken });
                             }
                                 req.url = split[0].substr(4);
                                 req.originalUrl = split[0];
