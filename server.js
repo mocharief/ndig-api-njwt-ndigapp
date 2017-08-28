@@ -101,6 +101,56 @@ router.route('/newsintel')
         });
     });
 
+router.route('/newsintel/filter/:paramwaktu')
+    .get(function(req, res) {
+        var nPrev;
+        if (req.params.paramwaktu == "lastday"){nPrev=1};
+        if (req.params.paramwaktu == "lastweek"){nPrev=7};
+        if (req.params.paramwaktu == "lastmonth"){nPrev=30};
+        if (req.params.paramwaktu == "lastyear"){nPrev=365};
+        var thePrevDate = util.getNPrevDate(nPrev);
+        
+        // akses DB
+        var temp = [];
+        Pesan.find({'date': {$gte: thePrevDate}}, function(err, pesanasli) {
+            if (err)
+                res.send(err);
+
+            for(i=0; i<pesanasli.length; i++){
+                var pesanmodif = new Newsintel();      // create a new instance of the Pesan model
+                pesanmodif.source       = 'intel';
+                pesanmodif.dari         = pesanasli[i].dari;  
+                pesanmodif.laporan      = pesanasli[i].laporan;           
+                if(pesanasli[i].lokasi)  {pesanmodif.lokasi       = pesanasli[i].lokasi;} else {pesanmodif.lokasi = null;}
+                if(pesanasli[i].category){pesanmodif.category     = pesanasli[i].category;} else {pesanmodif.category = null;}
+                pesanmodif.date         = pesanasli[i].date;
+                pesanmodif.threatlevel  = null;    
+
+                temp.push(pesanmodif);
+            }
+            
+            AnalysedInfo.find({'eventDateDate': {$gte: thePrevDate}},function(err, newsasli) {
+                if (err)
+                    res.send(err);
+
+                for(i=0; i<newsasli.length; i++){
+                    var newsmodif = new Newsintel();      // create a new instance of the Pesan model
+                    newsmodif.source       = newsasli[i].dataSource;
+                    newsmodif.dari         = newsasli[i].contentLocator;  
+                    newsmodif.laporan      = newsasli[i].contentSubject;
+                    if(newsasli[i].eventLat && newsasli[i].eventLon){newsmodif.lokasi = {latitude : newsasli[i].eventLat, longitude : newsasli[i].eventLon};} else {newsmodif.lokasi = null;}
+                    newsmodif.category = newsasli[i].categoryMain;
+                    if(newsasli[i].categorySub1) {newsmodif.category += ','+newsasli[i].categorySub1;}
+                    if(newsasli[i].categorySub2) {newsmodif.category += ','+newsasli[i].categorySub2;}
+                    newsmodif.date         = newsasli[i].eventDateDate;
+                    newsmodif.threatlevel  = newsasli[i].threatWarning;
+
+                    temp.push(newsmodif);
+                }
+                res.json(temp);
+            });
+        });
+    })
 
 
 // -----------------------PESANS-----------------------------
