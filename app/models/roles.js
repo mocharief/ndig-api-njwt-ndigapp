@@ -10,13 +10,7 @@ var RoleSchema  = new Schema ({
         type: String,
         required: true
     },
-    viewDashboard: Boolean,
-    viewCategory: Boolean,
-    viewThreat: Boolean,
-    viewIntel: Boolean,
-    viewNews: Boolean,
-    viewUserManage: Boolean,
-    viewCRUD: Boolean
+    permissions: [{ type: String }]
 })
 
 module.exports = mongoose.model('Roles', RoleSchema);
