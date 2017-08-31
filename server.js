@@ -686,18 +686,24 @@ router.route('/usermanagement/signup')
                     res.status(209)
                         .send('Please insert the account data!');
                 } else {
-                    var newUser = new User({
-                        username: req.body.username,
-                        password: req.body.password,
-                        role: req.body.role
-                    });
+                    User.findOne({username: req.body.username}, function(err, user){
+                        if(user) {
+                            res.status(409)
+                            .send('Username already exists!');
+                        } else {
+                            var newUser = new User({
+                                username: req.body.username,
+                                password: req.body.password,
+                                role: req.body.role
+                            });
 
-                    newUser.save(function(err, newUser){
-                        if(err){
-                            return res.status(409)
-                                .send('Username already exists!')
+                            newUser.save(function(err, newUser){
+                                if(err){
+                                    res.status(409).send(err);
+                                }
+                                res.send(newUser.username + ' created!');
+                            });
                         }
-                        res.send(newUser.username + ' created!')
                     });
                 }
             } else {
@@ -718,7 +724,7 @@ router.route('/usermanagement/account-data')
             if (err) {
                 res.status(404).send(err);
             } else {
-                if(role.permissions.indexOf("view-account-data") !== -1) { // kondisi jika value tidak ada pada array (jika ada akan mereturn nilai (0-n) index value tersebut)
+                if(role.permissions.indexOf("view-user-data") !== -1) { // kondisi jika value tidak ada pada array (jika ada akan mereturn nilai (0-n) index value tersebut)
                     // Encrypt
                     User.find({}, function(err, users) {
                         if (err) {
@@ -890,16 +896,23 @@ router.post('/rolemanagement/create', function(req,res) {
                     res.status(209)
                         .send('Please Insert Data')
                 } else {
-                    var newRole = new Roles({
-                        rolename: req.body.rolename,
-                        permissions: req.body.permissions
-                    });
+                    Roles.findOne({ rolename: req.body.rolename }, function(err, rolename) {
+                        if(rolename) {
+                            res.status(409)
+                            .send('Rolename already exists!');
+                        } else {
+                            var newRole = new Roles({
+                                rolename: req.body.rolename,
+                                permissions: req.body.permissions
+                            });
 
-                    newRole.save(function(err, newRole) {
-                        if(err) {
-                            return err;
+                            newRole.save(function(err, newRole) {
+                                if(err) {
+                                    res.status(409).send(err);
+                                }
+                                res.send(newRole.rolename + ' created!');
+                            });
                         }
-                        res.send(newRole)
                     });
                 }
             } else {
