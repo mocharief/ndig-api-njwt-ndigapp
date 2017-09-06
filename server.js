@@ -9,8 +9,9 @@ var bodyParser  = require('body-parser');
 var Pesan       = require('./app/models/pesan');
 var Twitter     = require('./app/models/twitter');
 var Roles       = require('./app/models/roles');
-
+var Newsintel   = require('./app/models/newsintel');
 var AnalysedInfo= require('./app/models/analysedinfo');
+var DocumentCategories    = require('./app/models/documentcategories');
 var summ        = require('./summary.js')(AnalysedInfo);
 var util        = require('./util.js');
 // var News     = require('./app/models/news');
@@ -19,8 +20,9 @@ var CryptoJS = require('crypto-js');
 
 var mongoose    = require('mongoose');
 // mongoose.connect('mongodb://localhost:27017/pesanIntelDB'); // connect to our database
-mongoose.connect('mongodb://localhost:27017/dias'); // connect to our database
+// mongoose.connect('mongodb://192.168.1.241:27017/dias'); // connect to our database
 // mongoose.connect('mongodb://192.168.1.8:27017/skmchatbot_message'); // connect to our database
+mongoose.connect('mongodb://localhost:27017/dias');
 
 // add package untuk sistem autentikasi njwt
 var uuidV4      = require('uuid/v4');
@@ -117,11 +119,110 @@ router.use(function(req, res, next) {
 
 // test route to make sure everything is working (accessed at GET http://localhost:8080/api)
 router.get('/', function(req, res) {
-    res.json({ message: 'heeloww! welcome to our api!' });   
+	res.json({ message: 'heeloww! welcome to our api!' });   
 });
 
 // ROUTING NDIG START HERE
 // =============================================================================
+
+// PESAN INTEL DAN NEWS
+router.route('/newsintel')
+    // A2. mengakses semua pesan
+    .get(function(req, res) {
+        var temp = [];
+        Pesan.find(function(err, pesanasli) {
+            if (err)
+                res.send(err);
+
+            for(i=0; i<pesanasli.length; i++){
+                var pesanmodif = new Newsintel();      // create a new instance of the Pesan model
+                pesanmodif.source       = 'intel';
+                pesanmodif.dari         = pesanasli[i].dari;  
+                pesanmodif.laporan      = pesanasli[i].laporan;           
+                if(pesanasli[i].lokasi)  {pesanmodif.lokasi       = pesanasli[i].lokasi;} else {pesanmodif.lokasi = null;}
+                if(pesanasli[i].category){pesanmodif.category     = pesanasli[i].category;} else {pesanmodif.category = null;}
+                pesanmodif.date         = pesanasli[i].date;
+                pesanmodif.threatlevel  = null;    
+
+                temp.push(pesanmodif);
+            }
+            
+            AnalysedInfo.find(function(err, newsasli) {
+                if (err)
+                    res.send(err);
+
+                for(i=0; i<newsasli.length; i++){
+                    var newsmodif = new Newsintel();      // create a new instance of the Pesan model
+                    newsmodif.source       = newsasli[i].dataSource;
+                    newsmodif.dari         = newsasli[i].contentLocator;  
+                    newsmodif.laporan      = newsasli[i].contentSubject;
+                    if(newsasli[i].eventLat && newsasli[i].eventLon){newsmodif.lokasi = {latitude : newsasli[i].eventLat, longitude : newsasli[i].eventLon};} else {newsmodif.lokasi = null;}
+                    newsmodif.category = newsasli[i].categoryMain;
+                    if(newsasli[i].categorySub1) {newsmodif.category += ','+newsasli[i].categorySub1;}
+                    if(newsasli[i].categorySub2) {newsmodif.category += ','+newsasli[i].categorySub2;}
+                    newsmodif.date         = newsasli[i].eventDateDate;
+                    newsmodif.threatlevel  = newsasli[i].threatWarning;
+
+                    temp.push(newsmodif);
+                }
+                // Encrypt
+                res.json({ data: encryptData(temp, encryptpass), secta: true });
+            });
+        });
+    });
+
+router.route('/newsintel/filter/:paramwaktu')
+    .get(function(req, res) {
+        var nPrev;
+        if (req.params.paramwaktu == "lastday"){nPrev=1};
+        if (req.params.paramwaktu == "lastweek"){nPrev=7};
+        if (req.params.paramwaktu == "lastmonth"){nPrev=30};
+        if (req.params.paramwaktu == "lastyear"){nPrev=365};
+        var thePrevDate = util.getNPrevDate(nPrev);
+        
+        // akses DB
+        var temp = [];
+        Pesan.find({'date': {$gte: thePrevDate}}, function(err, pesanasli) {
+            if (err)
+                res.send(err);
+
+            for(i=0; i<pesanasli.length; i++){
+                var pesanmodif = new Newsintel();      // create a new instance of the Pesan model
+                pesanmodif.source       = 'intel';
+                pesanmodif.dari         = pesanasli[i].dari;  
+                pesanmodif.laporan      = pesanasli[i].laporan;           
+                if(pesanasli[i].lokasi)  {pesanmodif.lokasi       = pesanasli[i].lokasi;} else {pesanmodif.lokasi = null;}
+                if(pesanasli[i].category){pesanmodif.category     = pesanasli[i].category;} else {pesanmodif.category = null;}
+                pesanmodif.date         = pesanasli[i].date;
+                pesanmodif.threatlevel  = null;    
+
+                temp.push(pesanmodif);
+            }
+            
+            AnalysedInfo.find({'eventDateDate': {$gte: thePrevDate}},function(err, newsasli) {
+                if (err)
+                    res.send(err);
+
+                for(i=0; i<newsasli.length; i++){
+                    var newsmodif = new Newsintel();      // create a new instance of the Pesan model
+                    newsmodif.source       = newsasli[i].dataSource;
+                    newsmodif.dari         = newsasli[i].contentLocator;  
+                    newsmodif.laporan      = newsasli[i].contentSubject;
+                    if(newsasli[i].eventLat && newsasli[i].eventLon){newsmodif.lokasi = {latitude : newsasli[i].eventLat, longitude : newsasli[i].eventLon};} else {newsmodif.lokasi = null;}
+                    newsmodif.category = newsasli[i].categoryMain;
+                    if(newsasli[i].categorySub1) {newsmodif.category += ','+newsasli[i].categorySub1;}
+                    if(newsasli[i].categorySub2) {newsmodif.category += ','+newsasli[i].categorySub2;}
+                    newsmodif.date         = newsasli[i].eventDateDate;
+                    newsmodif.threatlevel  = newsasli[i].threatWarning;
+
+                    temp.push(newsmodif);
+                }
+                // Encrypt
+                res.json({ data: encryptData(temp, encryptpass), secta: true });
+            });
+        });
+    })
+
 
 // -----------------------PESANS-----------------------------
 // -----------------------PESANS-----------------------------
@@ -132,21 +233,21 @@ router.get('/', function(req, res) {
 router.route('/rawpesans')
 
 // A1. menyimpan pesan k DB
-    .post(function(req, res) {        
-        var pesan = new Pesan();      // create a new instance of the Pesan model
-        pesan.dari      = req.body.dari;  // ngisi param
-        pesan.type      = req.body.type;
-        pesan.date      = req.body.date;
-        pesan.category  = req.body.category;
-        pesan.laporan   = req.body.pesan;
+	.post(function(req, res) {        
+		var pesan = new Pesan();      // create a new instance of the Pesan model
+		pesan.dari      = req.body.dari;  // ngisi param
+		pesan.type      = req.body.type;
+		pesan.date      = req.body.date;
+		pesan.category  = req.body.category;
+		pesan.laporan   = req.body.pesan;
 
-        // save the pesan and check for errors
-        pesan.save(function(err, pesan) {
-            if (err)
-                res.send(err);
-            res.json({ message: 'pesan '+pesan+' berhasil digenerate!' });
-        });
-    })
+		// save the pesan and check for errors
+		pesan.save(function(err, pesan) {
+			if (err)
+				res.send(err);
+			res.json({ message: 'pesan '+pesan+' berhasil digenerate!' });
+		});
+	})
 
 // A2. mengakses semua pesan
     .get(function(req, res) {
@@ -195,34 +296,34 @@ router.route('/rawpesans/:pesan_id')
     })
 
    .put(function(req, res) {
-        Pesan.findById(req.params.pesan_id, function(err, pesan) {
-            if (err)
-                res.send(err);
+		Pesan.findById(req.params.pesan_id, function(err, pesan) {
+			if (err)
+				res.send(err);
 
-            // update the pesan 
-            pesan.dari      = pesan.dari;  // ngisi param
-            pesan.type      = pesan.type;
-            pesan.date      = pesan.date;
-            pesan.category  = pesan.category;
-            pesan.laporan   = pesan.laporan;
-            pesan.lokasi    = req.body.lokasi;
+			// update the pesan 
+			pesan.dari      = pesan.dari;  // ngisi param
+			pesan.type      = pesan.type;
+			pesan.date      = pesan.date;
+			pesan.category  = pesan.category;
+			pesan.laporan   = pesan.laporan;
+			pesan.lokasi    = req.body.lokasi;
 
-            // var pesan = new Pesan();      // create a new instance of the Pesan model
-            // pesan.dari      = req.body.dari;  // ngisi param
-            // pesan.type      = req.body.type;
-            // pesan.date      = req.body.date;
-            // pesan.category  = req.body.category;
-            // pesan.laporan   = req.body.pesan;
+			// var pesan = new Pesan();      // create a new instance of the Pesan model
+			// pesan.dari      = req.body.dari;  // ngisi param
+			// pesan.type      = req.body.type;
+			// pesan.date      = req.body.date;
+			// pesan.category  = req.body.category;
+			// pesan.laporan   = req.body.pesan;
 
 
-            // save the pesan
-            pesan.save(function(err) {
-                if (err)
-                    res.send(err);
-                res.json({ message: 'Pesan updated!' });
-            });
-        });
-    })
+			// save the pesan
+			pesan.save(function(err) {
+				if (err)
+					res.send(err);
+				res.json({ message: 'Pesan updated!' });
+			});
+		});
+	})
 
 
 // B4. berdasarkan date tertentu
@@ -315,21 +416,20 @@ router.route('/rawpesans/isi/:pesan')
 // mengakses semua twitter dan menyimpan twitter
 router.route('/rawtwitters')
    .post(function(req, res) {        
-        var twitter = new Twitter();      // create a new instance of the Pesan model
-        twitter.user        = req.body.user;  // ngisi param
-        twitter.location    = req.body.location;
-        twitter.geolocation = req.body.geolocation;
-        twitter.date        = req.body.date;
-        twitter.tweet       = req.body.tweet;
-
-        // save the pesan and check for errors
-        twitter.save(function(err, twit) {
-            if (err)
-                res.send(err);
-            res.json({ message: 'tweet '+twit+' berhasil digenerate!' });
-        });
+		var twitter = new Twitter();      // create a new instance of the Pesan model
+		twitter.user        = req.body.user;  // ngisi param
+		twitter.location    = req.body.location;
+		twitter.geolocation = req.body.geolocation;
+		twitter.date        = req.body.date;
+		twitter.tweet       = req.body.tweet;
+		// save the pesan and check for errors
+		twitter.save(function(err, twit) {
+			if (err)
+				res.send(err);
+			res.json({ message: 'tweet '+twit+' berhasil digenerate!' });
+		});
     })
-
+    
     .get(function(req, res) {
         Twitter.find(function(err, twit) {
             if (err)
@@ -442,7 +542,7 @@ router.route('/analysedinfo/filter/:paramwaktu/source/:paramsource')
 
 
 // A3. CATEGORY - FILTER - SOURCE 
-// paramCat = lihat documentCategories.json
+// paramCat = lihat documentCategories.json atau category_summary.ods
 // paramLev = [low, med, high]
 
 // router.route('/analysedinfo/category/:paramcat')
@@ -494,7 +594,6 @@ router.route('/analysedinfo/category/:paramcat/filter/:paramwaktu/source/:params
 
 
 // A4. THREATLEVEL - FILTER - SOURCE 
-// paramCat = lihat documentCategories.json
 // paramLev = [low, med, high]
 
 // router.route('/analysedinfo/threatlevel/:paramlev')
@@ -507,42 +606,146 @@ router.route('/analysedinfo/category/:paramcat/filter/:paramwaktu/source/:params
 //     });
 
 router.route('/analysedinfo/threatlevel/:paramlev/filter/:paramwaktu/source/:paramsource')
-    .get(function(req, res) {
-        var nPrev;
-        if (req.params.paramwaktu == "lastday"){nPrev=1};
-        if (req.params.paramwaktu == "lastweek"){nPrev=7};
-        if (req.params.paramwaktu == "lastmonth"){nPrev=30};
-        if (req.params.paramwaktu == "lastyear"){nPrev=365};
-        var thePrevDate = util.getNPrevDate(nPrev);
-        
-        if (req.params.paramsource == "all"){
-            AnalysedInfo.find({
-                $and: [
-                      {'threatWarning': req.params.paramlev},
-                      {'eventDateDate': {$gte: thePrevDate}} //sama dengan date.month bulan ini
-                ]
-            }, function (err, info) {
-                if (err)
-                    res.send(err);
+	.get(function(req, res) {
+		var nPrev;
+		if (req.params.paramwaktu == "lastday"){nPrev=1};
+		if (req.params.paramwaktu == "lastweek"){nPrev=7};
+		if (req.params.paramwaktu == "lastmonth"){nPrev=30};
+		if (req.params.paramwaktu == "lastyear"){nPrev=365};
+		var thePrevDate = util.getNPrevDate(nPrev);
+		
+		if (req.params.paramsource == "all"){
+			AnalysedInfo.find({
+				$and: [
+					  {'threatWarning': req.params.paramlev},
+					  {'eventDateDate': {$gte: thePrevDate}} //sama dengan date.month bulan ini
+				]
+			}, function (err, info) {
+				if (err)
+					res.send(err);
                 // Encrypt
                 res.json({ data: encryptData(info, encryptpass), secta: true });
             });
-        } 
-        else {
-            AnalysedInfo.find({
-                $and: [
-                      {'threatWarning': req.params.paramlev},
-                      {'dataSource': req.params.paramsource},
-                      {'eventDateDate': {$gte: thePrevDate}} //sama dengan date.month bulan ini
-                ]
-            }, function (err, info) {
-                if (err)
-                    res.send(err);
+		} 
+		else {
+			AnalysedInfo.find({
+				$and: [
+					  {'threatWarning': req.params.paramlev},
+					  {'dataSource': req.params.paramsource},
+					  {'eventDateDate': {$gte: thePrevDate}} //sama dengan date.month bulan ini
+				]
+			}, function (err, info) {
+				if (err)
+					res.send(err);
+                // Encrypt
+                res.json({ data: encryptData(info, encryptpass), secta: true });
+			});
+		}
+	});
+
+
+// A5. SUBCATEGORY1 - FILTER - SOURCE 
+// paramSubCat1 = lihat documentCategories.json atau category_summary.ods
+// paramLev = [low, med, high]
+
+// router.route('/analysedinfo/subcategory1/:paramcat')
+//     .get(function(req, res) {
+//         AnalysedInfo.find({ 'categorySub1': req.params.paramcat}, function (err, info) {
+//             if (err)
+//                 res.send(err);
+//             res.json(info);
+//         });
+//     });
+
+router.route('/analysedinfo/subcategory1/:paramcat/filter/:paramwaktu/source/:paramsource')
+	.get(function(req, res) {
+		var nPrev;
+		if (req.params.paramwaktu == "lastday"){nPrev=1};
+		if (req.params.paramwaktu == "lastweek"){nPrev=7};
+		if (req.params.paramwaktu == "lastmonth"){nPrev=30};
+		if (req.params.paramwaktu == "lastyear"){nPrev=365};
+		var thePrevDate = util.getNPrevDate(nPrev);
+		
+		if (req.params.paramsource == "all"){
+			AnalysedInfo.find({
+				$and: [
+					  {'categorySub1': req.params.paramcat},
+					  {'eventDateDate': {$gte: thePrevDate}} //sama dengan date.month bulan ini
+				]
+			}, function (err, info) {
+				if (err)
+					res.send(err);
+				// Encrypt
+                res.json({ data: encryptData(info, encryptpass), secta: true });
+			});
+		} 
+		else {
+			AnalysedInfo.find({
+				$and: [
+					  {'categorySub1': req.params.paramcat},
+					  {'dataSource': req.params.paramsource},
+					  {'eventDateDate': {$gte: thePrevDate}} //sama dengan date.month bulan ini
+				]
+			}, function (err, info) {
+				if (err)
+					res.send(err);
                 // Encrypt
                 res.json({ data: encryptData(info, encryptpass), secta: true });
             });
-        }
-    });
+		}
+	});
+
+
+// A6. SUBCATEGORY2 - FILTER - SOURCE 
+// paramSubCat2 = lihat documentCategories.json atau category_summary.ods
+// paramLev = [low, med, high]
+
+// router.route('/analysedinfo/subcategory2/:paramcat')
+//     .get(function(req, res) {
+//         AnalysedInfo.find({ 'categoryMain': req.params.paramcat}, function (err, info) {
+//             if (err)
+//                 res.send(err);
+//             res.json(info);
+//         });
+//     });
+
+router.route('/analysedinfo/subcategory2/:paramcat/filter/:paramwaktu/source/:paramsource')
+	.get(function(req, res) {
+		var nPrev;
+		if (req.params.paramwaktu == "lastday"){nPrev=1};
+		if (req.params.paramwaktu == "lastweek"){nPrev=7};
+		if (req.params.paramwaktu == "lastmonth"){nPrev=30};
+		if (req.params.paramwaktu == "lastyear"){nPrev=365};
+		var thePrevDate = util.getNPrevDate(nPrev);
+		
+		if (req.params.paramsource == "all"){
+			AnalysedInfo.find({
+				$and: [
+					  {'categorySub2': req.params.paramcat},
+					  {'eventDateDate': {$gte: thePrevDate}} //sama dengan date.month bulan ini
+				]
+			}, function (err, info) {
+				if (err)
+					res.send(err);
+				// Encrypt
+                res.json({ data: encryptData(info, encryptpass), secta: true });
+			});
+		} 
+		else {
+			AnalysedInfo.find({
+				$and: [
+					  {'categorySub2': req.params.paramcat},
+					  {'dataSource': req.params.paramsource},
+					  {'eventDateDate': {$gte: thePrevDate}} //sama dengan date.month bulan ini
+				]
+			}, function (err, info) {
+				if (err)
+					res.send(err);
+				// Encrypt
+                res.json({ data: encryptData(info, encryptpass), secta: true });
+			});
+		}
+	});
 
 
 
@@ -595,15 +798,47 @@ router.route('/piechart/filter/:paramwaktu/source/:paramsource')
 
 // PIECHART - CATEGORY - FILTER - SOURCE 
 // paramCat = lihat documentCategories.json
+// paramwaktu = [lastday, lastweek, lastmonth, lastyear]
 // paramsource = [all, news, twitter, intel]
 router.route('/piechart/category/:paramcat/filter/:paramwaktu/source/:paramsource')
-    .get(function(req, res) {
-        console.log("Accessing /piechart with category " + req.params.paramcat + " and filter " + req.params.paramwaktu + " and source " + req.params.paramsource); 
-        summ.getPiechartCategorySummary(function(summary) {
+	.get(function(req, res) {
+		console.log("Accessing /piechart with category " + req.params.paramcat + " and filter " + req.params.paramwaktu + " and source " + req.params.paramsource);
+
+		summ.getPiechartCategorySummary(function(summary) {
             // Encrypt
-            res.json({ data: encryptData(summary, encryptpass), secta: true });
-        }, req.params.paramcat, req.params.paramwaktu, req.params.paramsource);
-    });
+            res.json({ data: encryptData(summary, encryptpass), secta: true });                        
+		}, req.params.paramcat, req.params.paramwaktu, req.params.paramsource);
+	});
+
+
+// PIECHART - SUBCATEGORY1 - FILTER - SOURCE 
+// paramsubcat1 = lihat documentCategories.json atau category_summary.ods
+// paramwaktu = [lastday, lastweek, lastmonth, lastyear]
+// paramsource = [all, news, twitter, intel]
+router.route('/piechart/subcategory1/:paramsubcat1/filter/:paramwaktu/source/:paramsource')
+	.get(function(req, res) {
+		console.log("Accessing /piechart with subcategory1 " + req.params.paramsubcat1 + " and filter " + req.params.paramwaktu + " and source " + req.params.paramsource); 
+		
+		summ.getPiechartSubcategory1Summary(function(summary) {
+            // Encrypt
+            res.json({ data: encryptData(summary, encryptpass), secta: true });            
+		}, req.params.paramsubcat1, req.params.paramwaktu, req.params.paramsource);
+	});
+
+
+// PIECHART - SUBCATEGORY2 - FILTER - SOURCE 
+// paramsubcat2 = lihat documentCategories.json atau category_summary.ods
+// paramwaktu = [lastday, lastweek, lastmonth, lastyear]
+// paramsource = [all, news, twitter, intel]
+router.route('/piechart/subcategory2/:paramsubcat2/filter/:paramwaktu/source/:paramsource')
+	.get(function(req, res) {
+		console.log("Accessing /piechart with subcategory2 " + req.params.paramsubcat2 + " and filter " + req.params.paramwaktu + " and source " + req.params.paramsource); 
+		
+		summ.getPiechartSubcategory2Summary(function(summary) {
+            // Encrypt
+            res.json({ data: encryptData(summary, encryptpass), secta: true });  
+		}, req.params.paramsubcat2, req.params.paramwaktu, req.params.paramsource);
+	});
 
 
 // PIECHART - THREATLEVEL - FILTER - SOURCE 
@@ -644,13 +879,42 @@ router.route('/linechart/filter/:paramwaktu/source/:paramsource')
 // paramCat = lihat documentCategories.json
 // paramsource = [all, news, twitter, intel]
 router.route('/linechart/category/:paramcat/filter/:paramwaktu/source/:paramsource')
-    .get(function(req, res) {
-        console.log("Accessing /linechart with category " + req.params.paramcat + " and filter " + req.params.paramwaktu + " and source " + req.params.paramsource); 
-        summ.getLinechartCategorySummary(function(summary) {
-            // Encrypt
+	.get(function(req, res) {
+		console.log("Accessing /linechart with category " + req.params.paramcat + " and filter " + req.params.paramwaktu + " and source " + req.params.paramsource); 
+
+		summ.getLinechartCategorySummary(function(summary) {
+			// Encrypt
             res.json({ data: encryptData(summary, encryptpass), secta: true });
-        }, req.params.paramcat, req.params.paramwaktu, req.params.paramsource);
-    });
+		}, req.params.paramcat, req.params.paramwaktu, req.params.paramsource);
+	});
+
+
+// LINECHART - SUBCATEGORY1 - FILTER - SOURCE 
+// paramsubcat1 = lihat documentCategories.json atau category_summary.ods
+// paramsource = [all, news, twitter, intel]
+router.route('/linechart/subcategory1/:paramsubcat1/filter/:paramwaktu/source/:paramsource')
+	.get(function(req, res) {
+		console.log("Accessing /linechart with subcategory1 " + req.params.paramsubcat1 + " and filter " + req.params.paramwaktu + " and source " + req.params.paramsource); 
+
+		summ.getLinechartSubcategory1Summary(function(summary) {
+			// Encrypt
+            res.json({ data: encryptData(summary, encryptpass), secta: true });
+		}, req.params.paramsubcat1, req.params.paramwaktu, req.params.paramsource);
+	});
+
+
+// LINECHART - SUBCATEGORY1 - FILTER - SOURCE 
+// paramsubcat1 = lihat documentCategories.json atau category_summary.ods
+// paramsource = [all, news, twitter, intel]
+router.route('/linechart/subcategory2/:paramsubcat2/filter/:paramwaktu/source/:paramsource')
+	.get(function(req, res) {
+		console.log("Accessing /linechart with subcategory2 " + req.params.paramsubcat2 + " and filter " + req.params.paramwaktu + " and source " + req.params.paramsource); 
+
+		summ.getLinechartSubcategory2Summary(function(summary) {
+			// Encrypt
+            res.json({ data: encryptData(summary, encryptpass), secta: true });
+		}, req.params.paramsubcat2, req.params.paramwaktu, req.params.paramsource);
+	});
 
 
 // LINECHART - THREATLEVEL - FILTER - SOURCE 
