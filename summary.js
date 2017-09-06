@@ -399,7 +399,9 @@ module.exports = function(AnalysedInfo){
 		if (paramwaktu == "lastyear"){nPrev=365};
 		var thePrevDate = util.getNPrevDate(nPrev);
 
-		if (subcategories2[0].sub1[0].sub2) {
+		console.log(subcategories2);
+
+		if (subcategories2.length > 0 && subcategories2[0].sub1[0].sub2) {
 
 			async.each(subcategories2[0].sub1[0].sub2, function(subcategory2, eachcallback)
 			{
