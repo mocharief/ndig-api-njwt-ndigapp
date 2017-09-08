@@ -20,9 +20,9 @@ var CryptoJS = require('crypto-js');
 
 var mongoose    = require('mongoose');
 // mongoose.connect('mongodb://localhost:27017/pesanIntelDB'); // connect to our database
-// mongoose.connect('mongodb://192.168.1.241:27017/dias'); // connect to our database
+mongoose.connect('mongodb://192.168.1.241:27017/dias'); // connect to our database
 // mongoose.connect('mongodb://192.168.1.8:27017/skmchatbot_message'); // connect to our database
-mongoose.connect('mongodb://localhost:27017/dias');
+// mongoose.connect('mongodb://localhost:27017/dias');
 
 // add package untuk sistem autentikasi njwt
 var uuidV4      = require('uuid/v4');
@@ -1064,18 +1064,19 @@ router.route('/usermanagement/delete/:id')
                 res.status(404).send(err);
             } else {
                 if(role.permissions.indexOf("delete-user") !== -1) { // kondisi jika value tidak ada pada array (jika ada akan mereturn nilai (0-n) index value tersebut)
-                    User.findByIdAndRemove(req.params.id, function(err,user){
+                    User.findById(req.params.id, function(err,user){
                         if(req.params.id === req.body.verifiedJwt._id) {
                             res.status(400).send("CANNOT DELETED THIS ACCOUNT!");
                         } else {
-                            if(err){
-                                res.status(404).send(err);
-                            } else {
-                                res.json({
-                                    msg: 'Account ' + user.username + ' successfully deleted',
-                                    id: user.id
-                                });
-                            }
+                                if(err){
+                                    res.status(404).send(err);
+                                } else {
+                                    user.remove();
+                                    res.json({
+                                        msg: 'Account ' + user.username + ' successfully deleted',
+                                        id: user.id
+                                    });
+                                }
                         }
                     })
                 } else {
