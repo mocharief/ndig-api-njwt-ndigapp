@@ -20,9 +20,9 @@ var CryptoJS = require('crypto-js');
 
 var mongoose    = require('mongoose');
 // mongoose.connect('mongodb://localhost:27017/pesanIntelDB'); // connect to our database
-mongoose.connect('mongodb://192.168.1.241:27017/dias'); // connect to our database
+// mongoose.connect('mongodb://192.168.1.241:27017/dias'); // connect to our database
 // mongoose.connect('mongodb://192.168.1.8:27017/skmchatbot_message'); // connect to our database
-// mongoose.connect('mongodb://localhost:27017/dias');
+mongoose.connect('mongodb://localhost:27017/dias');
 
 // add package untuk sistem autentikasi njwt
 var uuidV4      = require('uuid/v4');
@@ -60,7 +60,7 @@ app.all('/*',cors(corsOptions));
 var port = process.env.PORT || 9099;        // set our port
 var START, END;
 var encryptpass = 'NDIG-DIAS';
-var MODE_DEVELOP = false;
+var MODE_DEVELOP = true;
 
 // ROUTES FOR OUR API
 // =============================================================================
@@ -166,7 +166,7 @@ router.route('/newsintel')
                     temp.push(newsmodif);
                 }
                 // Encrypt
-                res.json({ data: encryptData(temp, encryptpass), secta: true });
+                res.json( encryptData(temp, encryptpass) );
             });
         });
     });
@@ -218,7 +218,7 @@ router.route('/newsintel/filter/:paramwaktu')
                     temp.push(newsmodif);
                 }
                 // Encrypt
-                res.json({ data: encryptData(temp, encryptpass), secta: true });
+                res.json( encryptData(temp, encryptpass) );
             });
         });
     })
@@ -255,7 +255,7 @@ router.route('/rawpesans')
             if (err)
                 res.send(err);
             // Encrypt
-            res.json({ data: encryptData(pesans, encryptpass), secta: true });
+            res.json( encryptData(pesans, encryptpass) );
         });
     });
 
@@ -269,7 +269,7 @@ router.route('/rawpesans/dari/:nama')
             if (err) 
                 res.send(err);
             // Encrypt
-            res.json({ data: encryptData(pesan, encryptpass), secta: true });
+            res.json( encryptData(pesan, encryptpass) );
         });
     })
 
@@ -280,7 +280,7 @@ router.route('/rawpesans/type/:tipe')
             if (err)
                 res.send(err);
             // Encrypt
-            res.json({ data: encryptData(pesan, encryptpass), secta: true });
+            res.json( encryptData(pesan, encryptpass) );
         });
     })
 
@@ -291,7 +291,7 @@ router.route('/rawpesans/:pesan_id')
             if (err) 
                 res.send(err);
             // Encrypt
-            res.json({ data: encryptData(pesan, encryptpass), secta: true });
+            res.json( encryptData(pesan, encryptpass) );
         });
     })
 
@@ -353,7 +353,7 @@ router.route('/rawpesans/filter/:paramwaktu')
             if (err) 
                 res.send(err);
             // Encrypt
-            res.json({ data: encryptData(pesan, encryptpass), secta: true });
+            res.json( encryptData(pesan, encryptpass) );
         });
     })
 
@@ -364,7 +364,7 @@ router.route('/rawpesans/isi/:pesan')
             if (err)
                 res.send(err);
             // Encrypt
-            res.json({ data: encryptData(pesan, encryptpass), secta: true });
+            res.json( encryptData(pesan, encryptpass) );
         });
     })
 
@@ -435,7 +435,7 @@ router.route('/rawtwitters')
             if (err)
                 res.send(err);
             // Encrypt
-            res.json({ data: encryptData(twit, encryptpass), secta: true });
+            res.json( encryptData(twit, encryptpass) );
         });
     });
 
@@ -500,7 +500,7 @@ router.route('/analysedinfo')
             if (err)
                 res.send(err);
             // Encrypt
-            res.json({ data: encryptData(news, encryptpass), secta: true });
+            res.json( encryptData(news, encryptpass) );
         });
     });
 
@@ -522,7 +522,7 @@ router.route('/analysedinfo/filter/:paramwaktu/source/:paramsource')
                 if (err)
                     res.send(err);
                 // Encrypt
-                res.json({ data: encryptData(info, encryptpass), secta: true });
+                res.json( encryptData(info, encryptpass) );
             });
         } 
         else {
@@ -535,7 +535,7 @@ router.route('/analysedinfo/filter/:paramwaktu/source/:paramsource')
                 if (err)
                     res.send(err);
                 // Encrypt
-                res.json({ data: encryptData(info, encryptpass), secta: true });
+                res.json( encryptData(info, encryptpass) );
             });
         }
     });
@@ -573,7 +573,7 @@ router.route('/analysedinfo/category/:paramcat/filter/:paramwaktu/source/:params
                 if (err)
                     res.send(err);
                 // Encrypt
-                res.json({ data: encryptData(info, encryptpass), secta: true });
+                res.json( encryptData(info, encryptpass) );
             });
         } 
         else {
@@ -587,7 +587,7 @@ router.route('/analysedinfo/category/:paramcat/filter/:paramwaktu/source/:params
                 if (err)
                     res.send(err);
                 // Encrypt
-                res.json({ data: encryptData(info, encryptpass), secta: true });
+                res.json( encryptData(info, encryptpass) );
             });
         }
     });
@@ -624,7 +624,7 @@ router.route('/analysedinfo/threatlevel/:paramlev/filter/:paramwaktu/source/:par
 				if (err)
 					res.send(err);
                 // Encrypt
-                res.json({ data: encryptData(info, encryptpass), secta: true });
+                res.json( encryptData(info, encryptpass) );
             });
 		} 
 		else {
@@ -638,7 +638,7 @@ router.route('/analysedinfo/threatlevel/:paramlev/filter/:paramwaktu/source/:par
 				if (err)
 					res.send(err);
                 // Encrypt
-                res.json({ data: encryptData(info, encryptpass), secta: true });
+                res.json( encryptData(info, encryptpass) );
 			});
 		}
 	});
@@ -676,7 +676,7 @@ router.route('/analysedinfo/subcategory1/:paramcat/filter/:paramwaktu/source/:pa
 				if (err)
 					res.send(err);
 				// Encrypt
-                res.json({ data: encryptData(info, encryptpass), secta: true });
+                res.json( encryptData(info, encryptpass) );
 			});
 		} 
 		else {
@@ -690,7 +690,7 @@ router.route('/analysedinfo/subcategory1/:paramcat/filter/:paramwaktu/source/:pa
 				if (err)
 					res.send(err);
                 // Encrypt
-                res.json({ data: encryptData(info, encryptpass), secta: true });
+                res.json( encryptData(info, encryptpass) );
             });
 		}
 	});
@@ -728,7 +728,7 @@ router.route('/analysedinfo/subcategory2/:paramcat/filter/:paramwaktu/source/:pa
 				if (err)
 					res.send(err);
 				// Encrypt
-                res.json({ data: encryptData(info, encryptpass), secta: true });
+                res.json( encryptData(info, encryptpass) );
 			});
 		} 
 		else {
@@ -742,7 +742,7 @@ router.route('/analysedinfo/subcategory2/:paramcat/filter/:paramwaktu/source/:pa
 				if (err)
 					res.send(err);
 				// Encrypt
-                res.json({ data: encryptData(info, encryptpass), secta: true });
+                res.json( encryptData(info, encryptpass) );
 			});
 		}
 	});
@@ -761,7 +761,7 @@ router.route('/threatsummary')
         console.log("Accessing /threatsummary");
         summ.getProvinceSummary(function(summary) {
             // Encrypt
-            res.json({ data: encryptData(summary, encryptpass), secta: true });
+            res.json( encryptData(summary, encryptpass) );
         });
     });
 
@@ -771,7 +771,7 @@ router.route('/categorysummary')
         console.log("Accessing /categorysummary");
         summ.getCategorySummary(function(summary) {
             // Encrypt
-            res.json({ data: encryptData(summary, encryptpass), secta: true });
+            res.json( encryptData(summary, encryptpass) );
         });
     });
 
@@ -791,7 +791,7 @@ router.route('/piechart/filter/:paramwaktu/source/:paramsource')
         console.log("Accessing /piechart with filter " + req.params.paramwaktu + " and source " + req.params.paramsource); 
         summ.getPiechartSummary(function(summary) {
             // Encrypt
-            res.json({ data: encryptData(summary, encryptpass), secta: true });
+            res.json( encryptData(summary, encryptpass) );
         }, req.params.paramwaktu, req.params.paramsource);
     });
 
@@ -806,7 +806,7 @@ router.route('/piechart/category/:paramcat/filter/:paramwaktu/source/:paramsourc
 
 		summ.getPiechartCategorySummary(function(summary) {
             // Encrypt
-            res.json({ data: encryptData(summary, encryptpass), secta: true });                        
+            res.json( encryptData(summary, encryptpass) );                        
 		}, req.params.paramcat, req.params.paramwaktu, req.params.paramsource);
 	});
 
@@ -821,7 +821,7 @@ router.route('/piechart/subcategory1/:paramsubcat1/filter/:paramwaktu/source/:pa
 		
 		summ.getPiechartSubcategory1Summary(function(summary) {
             // Encrypt
-            res.json({ data: encryptData(summary, encryptpass), secta: true });            
+            res.json( encryptData(summary, encryptpass) );            
 		}, req.params.paramsubcat1, req.params.paramwaktu, req.params.paramsource);
 	});
 
@@ -836,7 +836,7 @@ router.route('/piechart/subcategory2/:paramsubcat2/filter/:paramwaktu/source/:pa
 		
 		summ.getPiechartSubcategory2Summary(function(summary) {
             // Encrypt
-            res.json({ data: encryptData(summary, encryptpass), secta: true });  
+            res.json( encryptData(summary, encryptpass) );  
 		}, req.params.paramsubcat2, req.params.paramwaktu, req.params.paramsource);
 	});
 
@@ -850,7 +850,7 @@ router.route('/piechart/threatlevel/:paramlev/filter/:paramwaktu/source/:paramso
         console.log("Accessing /piechart with threat level " + req.params.paramlev + " and filter " + req.params.paramwaktu + " and source " + req.params.paramsource); 
         summ.getPiechartThreatSummary(function(summary) {
             // Encrypt
-            res.json({ data: encryptData(summary, encryptpass), secta: true });
+            res.json( encryptData(summary, encryptpass) );
         }, req.params.paramlev, req.params.paramwaktu, req.params.paramsource);
     });
 
@@ -870,7 +870,7 @@ router.route('/linechart/filter/:paramwaktu/source/:paramsource')
         console.log("Accessing /linechart with filter " + req.params.paramwaktu + " and source " + req.params.paramsource); 
         summ.getLinechartSummary(function(summary) {
             // Encrypt
-            res.json({ data: encryptData(summary, encryptpass), secta: true });
+            res.json( encryptData(summary, encryptpass) );
         }, req.params.paramwaktu, req.params.paramsource);
     });
 
@@ -884,7 +884,7 @@ router.route('/linechart/category/:paramcat/filter/:paramwaktu/source/:paramsour
 
 		summ.getLinechartCategorySummary(function(summary) {
 			// Encrypt
-            res.json({ data: encryptData(summary, encryptpass), secta: true });
+            res.json( encryptData(summary, encryptpass) );
 		}, req.params.paramcat, req.params.paramwaktu, req.params.paramsource);
 	});
 
@@ -898,7 +898,7 @@ router.route('/linechart/subcategory1/:paramsubcat1/filter/:paramwaktu/source/:p
 
 		summ.getLinechartSubcategory1Summary(function(summary) {
 			// Encrypt
-            res.json({ data: encryptData(summary, encryptpass), secta: true });
+            res.json( encryptData(summary, encryptpass) );
 		}, req.params.paramsubcat1, req.params.paramwaktu, req.params.paramsource);
 	});
 
@@ -912,7 +912,7 @@ router.route('/linechart/subcategory2/:paramsubcat2/filter/:paramwaktu/source/:p
 
 		summ.getLinechartSubcategory2Summary(function(summary) {
 			// Encrypt
-            res.json({ data: encryptData(summary, encryptpass), secta: true });
+            res.json( encryptData(summary, encryptpass) );
 		}, req.params.paramsubcat2, req.params.paramwaktu, req.params.paramsource);
 	});
 
@@ -926,7 +926,7 @@ router.route('/linechart/threatlevel/:paramlev/filter/:paramwaktu/source/:params
         console.log("Accessing /linechart with threat level " + req.params.paramlev + " and filter " + req.params.paramwaktu + " and source " + req.params.paramsource); 
         summ.getLinechartThreatSummary(function(summary) {
             // Encrypt
-            res.json({ data: encryptData(summary, encryptpass), secta: true });
+            res.json( encryptData(summary, encryptpass) );
         }, req.params.paramlev, req.params.paramwaktu, req.params.paramsource);
     });
 
@@ -994,7 +994,7 @@ router.route('/usermanagement/account-data')
                         if (err) {
                             res.status(404).send(err);
                         } else {
-                            res.json ({ data: encryptData(users, encryptpass), secta: true });
+                            res.json( encryptData(users, encryptpass) );
                         }
                     })
                 } else {
@@ -1095,7 +1095,7 @@ router.post('/authenticate', function(req, res){
 
         if(!user){
             res.status(404)
-                .send('Authentication failed! Email not found');
+                .send('Authentication failed! Username not found');
         } else if(user){
             if(req.body.password === user.password) {
                 getToken(user, signingKey, function(err, token) {
@@ -1137,11 +1137,16 @@ function getToken(user, secretKey, callback) {
 
 // function encyrypt data
 function encryptData(data, encryptpass) {
-    if (MODE_DEVELOP === true) {
-        return data;
+    if (MODE_DEVELOP === true) {    
+        return JSON.parse(JSON.stringify({
+            data: data
+        }));
     } else {
         var encryptData = CryptoJS.AES.encrypt(JSON.stringify(data), encryptpass);
-        return encryptData.toString();
+        return JSON.parse(JSON.stringify({
+            data: encryptData.toString(),
+            secta: true
+        }));
     }
 };
 
@@ -1199,7 +1204,7 @@ router.get('/rolemanagement/role-data', function(req, res) {
                         res.status(404).send(err);
                     } else {
                         // Encrypt    
-                        res.json({ data: encryptData(roles, encryptpass), secta: true });
+                        res.json( encryptData(roles, encryptpass) );
                     }
                 })
             } else {
