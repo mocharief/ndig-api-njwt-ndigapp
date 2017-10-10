@@ -20,9 +20,9 @@ var CryptoJS = require('crypto-js');
 
 var mongoose    = require('mongoose');
 // mongoose.connect('mongodb://localhost:27017/pesanIntelDB'); // connect to our database
-// mongoose.connect('mongodb://192.168.1.241:27017/dias'); // connect to our database
+mongoose.connect('mongodb://192.168.1.241:27017/dias'); // connect to our database
 // mongoose.connect('mongodb://192.168.1.8:27017/skmchatbot_message'); // connect to our database
-mongoose.connect('mongodb://localhost:27017/dias');
+// mongoose.connect('mongodb://localhost:27017/dias');
 
 // add package untuk sistem autentikasi njwt
 var uuidV4      = require('uuid/v4');
@@ -60,7 +60,7 @@ app.all('/*',cors(corsOptions));
 var port = process.env.PORT || 9099;        // set our port
 var START, END;
 var encryptpass = 'NDIG-DIAS';
-var MODE_DEVELOP = true;
+var MODE_DEVELOP = false;
 
 // ROUTES FOR OUR API
 // =============================================================================
