@@ -12,17 +12,19 @@ var Roles       = require('./app/models/roles');
 var Newsintel   = require('./app/models/newsintel');
 var AnalysedInfo= require('./app/models/analysedinfo');
 var DocumentCategories    = require('./app/models/documentcategories');
+var PesanIntelApp = require('./app/models/pesanintelapp');
 var summ        = require('./summary.js')(AnalysedInfo);
 var util        = require('./util.js');
 // var News     = require('./app/models/news');
 // var Webpage  = require('./app/models/crawl_webpage');
-var CryptoJS = require('crypto-js'); 
+var CryptoJS = require('crypto-js');
+var multer      = require('multer'); 
 
 var mongoose    = require('mongoose');
 // mongoose.connect('mongodb://localhost:27017/pesanIntelDB'); // connect to our database
-mongoose.connect('mongodb://192.168.1.241:27017/dias'); // connect to our database
+// mongoose.connect('mongodb://192.168.1.241:27017/dias'); // connect to our database
 // mongoose.connect('mongodb://192.168.1.8:27017/skmchatbot_message'); // connect to our database
-// mongoose.connect('mongodb://localhost:27017/dias');
+mongoose.connect('mongodb://localhost:27017/dias');
 
 // add package untuk sistem autentikasi njwt
 var uuidV4      = require('uuid/v4');
@@ -48,6 +50,17 @@ var corsOptions = {
    exposedHeaders : ["x-new-jwt"]
 };
 
+// configure app to use multer for Mobile NDIG-APP
+var storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+      cb(null, 'public/file')
+    },
+    filename: function (req, file, cb) {
+        cb(null, Date.now() + '-' + file.originalname)
+    }
+  })
+var upload = multer({ storage: storage, limits: {fileSize: 1000*1000*40} }).array('file',10);
+
 // add header
 // app.all('/*', function(req, res, next) {
 //   res.header("Access-Control-Allow-Origin", "*");
@@ -60,7 +73,7 @@ app.all('/*',cors(corsOptions));
 var port = process.env.PORT || 9099;        // set our port
 var START, END;
 var encryptpass = 'NDIG-DIAS';
-var MODE_DEVELOP = false;
+var MODE_DEVELOP = true;
 
 // ROUTES FOR OUR API
 // =============================================================================
@@ -1095,7 +1108,7 @@ router.post('/authenticate', function(req, res){
 
         if(!user){
             res.status(404)
-                .send('Authentication failed! Email not found');
+                .send('Authentication failed! Username not found');
         } else if(user){
             if(req.body.password === user.password) {
                 getToken(user, signingKey, function(err, token) {
@@ -1286,6 +1299,62 @@ router.delete('/rolemanagement/delete/:id', function(req, res) {
         }
     });
 });
+
+// ROUTER FOR MOBILE NDIG-APP
+router.route('/pesanintelapp')
+// Menyimpan pesan dan attachmentinfo ke DB
+.post(function(req, res) {
+    var verifiedJwt = req.body.verifiedJwt;
+    upload(req, res, function(err) {
+        if(err) {
+            res.status(404).send(err);
+        } else {
+            var pesan = new PesanIntelApp();
+
+            pesan.laporan = req.body.pesan;
+            pesan.category = req.body.category;
+            pesan.date = req.body.date;
+            pesan.type = req.body.type;
+            pesan.dari = verifiedJwt.username;
+            pesan.lokasi = {
+                longitude: req.body.longitude,
+                latitude: req.body.latitude
+            };
+            pesan.attachmentInfo = req.files.map(function (info){
+                var filterinfo = {
+                    size: info.size,
+                    path: info.path,
+                    mimetype: info.mimetype,
+                    encoding: info.encoding        
+                };
+                return filterinfo;
+            });
+
+            pesan.save(function(err, pesanintelapp) {
+                if(err) {
+                    res.send(err);
+                }
+                else {
+                    if (req.files)
+                        console.log('Attachment info successfully saved to database');
+                    res.json({ message: 'pesan '+pesanintelapp.laporan+' dari NDIG-App berhasil digenerate!' });
+                }
+            });
+        }
+    })
+})
+// Mengakses semua pesan
+.get(function(req, res){
+    var username = req.body.verifiedJwt.username;
+    console.log(username);
+    PesanIntelApp.find({'dari': {$regex:username, $options: 'i'} }, function(err, pesans) {
+        if(err) {
+            res.status(404).send(err);
+        } else {
+            res.json(pesans);
+        }
+    })
+})
 
 // =============================================================================
 // all of our routes will be prefixed with /api
