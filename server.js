@@ -43,7 +43,7 @@ app.use(cors());
 
 // configure app to use cors
 var corsOptions = {
-   origin : "http://localhost:9000",
+   origin : "*",
    allowedHeaders : ["*"],
    exposedHeaders : ["x-new-jwt"]
 };
@@ -930,169 +930,15 @@ router.route('/linechart/threatlevel/:paramlev/filter/:paramwaktu/source/:params
         }, req.params.paramlev, req.params.paramwaktu, req.params.paramsource);
     });
 
-
-// -----------------------USER AUTHENTICATION-----------------------------
-// -----------------------USER AUTHENTICATION-----------------------------
-// -----------------------USER AUTHENTICATION-----------------------------
-// -----------------------USER AUTHENTICATION-----------------------------
-
-router.route('/usermanagement/signup')
-    // Router Signup
-    .post(function(req, res) {
-    //if (port === corsOptions.port){
-    var roleId = req.body.verifiedJwt.role;
-    Roles.findById(roleId, function(err, role){
-        if (err) {
-            res.status(404).send(err);
-        } else {
-            if(role.permissions.indexOf("create-user") !== -1) { // kondisi jika value tidak ada pada array (jika ada akan mereturn nilai (0-n) index value tersebut)
-                if(!req.body.username || !req.body.password || !req.body.role){
-                    res.status(209)
-                        .send('Please insert the account data!');
-                } else {
-                    User.findOne({username: req.body.username}, function(err, user){
-                        if(user) {
-                            res.status(409)
-                            .send('Username already exists!');
-                        } else {
-                            var newUser = new User({
-                                username: req.body.username,
-                                password: req.body.password,
-                                role: req.body.role
-                            });
-
-                            newUser.save(function(err, newUser){
-                                if(err){
-                                    res.status(409).send(err);
-                                }
-                                res.send(newUser.username + ' created!');
-                            });
-                        }
-                    });
-                }
-            } else {
-                res.status(403).send('YOU ARE FORBIDDEN!');
-            }
-        }
-    });
-    //} else {
-    //    res.status(403).send('This is CORS-enabled for only http://localhost:' + corsOptions.port);
-    //}
-});
-
-// Router get data user dari mongoDB
-router.route('/usermanagement/account-data')
-    .get(function(req, res) {
-        var roleId = req.body.verifiedJwt.role;
-        Roles.findById(roleId, function(err, role){
-            if (err) {
-                res.status(404).send(err);
-            } else {
-                if(role.permissions.indexOf("view-user-data") !== -1) { // kondisi jika value tidak ada pada array (jika ada akan mereturn nilai (0-n) index value tersebut)
-                    // Encrypt
-                    User.find({}, function(err, users) {
-                        if (err) {
-                            res.status(404).send(err);
-                        } else {
-                            res.json( encryptData(users, encryptpass) );
-                        }
-                    })
-                } else {
-                    res.status(403).send('YOU ARE FORBIDDEN!');
-                }
-            }
-        })
-});
-
-// Router update data user
-router.route('/usermanagement/update/:id')
-    .get(function(req, res){
-        User.findById(req.params.id, function(err,user){
-            if(err){
-                res.status(404).send(err);
-            } else {
-                res.send(user);
-            }
-        })
-    })
-    
-    .put(function(req, res) {
-        var roleId = req.body.verifiedJwt.role;
-        Roles.findById(roleId, function(err, role){
-            if (err) {
-                res.status(404).send(err);
-            } else {
-                if(role.permissions.indexOf("update-user") !== -1) { // kondisi jika value tidak ada pada array (jika ada akan mereturn nilai (0-n) index value tersebut)
-                    User.findById(req.params.id, function(err, user){
-                        if(req.params.id === req.body.verifiedJwt._id) {
-                            res.status(400).send("CANNOT UPDATE THIS ACCOUNT!");
-                        } else {
-                            if (err) {
-                                res.status(404).send(err);
-                            } else {
-                                if(!req.body.username || !req.body.role || !req.body.password ) {
-                                    res.status(209)
-                                    .send('Please insert the account data!');
-                                } else {
-                                    user.username = req.body.username;
-                                    user.password = req.body.password;
-                                    user.role = req.body.role;
-
-                                    user.save(function(err, user){
-                                        if(err){
-                                            return err;
-                                        }
-                                        res.send('Succesfully updated');
-                                    });
-                                }
-                            }
-                        }
-                    });
-                } else {
-                    res.status(403).send('YOU ARE FORBIDDEN!');
-                }
-            }
-        });
-});
-
-// Router Delete user
-router.route('/usermanagement/delete/:id')
-    .delete(function(req, res){
-        var roleId = req.body.verifiedJwt.role;
-        Roles.findById(roleId, function(err, role){
-            if (err) {
-                res.status(404).send(err);
-            } else {
-                if(role.permissions.indexOf("delete-user") !== -1) { // kondisi jika value tidak ada pada array (jika ada akan mereturn nilai (0-n) index value tersebut)
-                    User.findById(req.params.id, function(err,user){
-                        if(req.params.id === req.body.verifiedJwt._id) {
-                            res.status(400).send("CANNOT DELETED THIS ACCOUNT!");
-                        } else {
-                                if(err){
-                                    res.status(404).send(err);
-                                } else {
-                                    user.remove();
-                                    res.json({
-                                        msg: 'Account ' + user.username + ' successfully deleted',
-                                        id: user.id
-                                    });
-                                }
-                        }
-                    })
-                } else {
-                    res.status(403).send('YOU ARE FORBIDDEN!');
-                }
-            }
-        });
-});
-
-// Router Login    
+// -----------------------ROUTER LOGIN-----------------------------
+// -----------------------ROUTER LOGIN-----------------------------
+// -----------------------ROUTER LOGIN-----------------------------
 router.post('/authenticate', function(req, res){
     User.findOne({
         username: req.body.username
     }, function(err, user){
         if(err) throw err;
-
+    
         if(!user){
             res.status(404)
                 .send('Authentication failed! Username not found');
@@ -1111,8 +957,11 @@ router.post('/authenticate', function(req, res){
             }
         }
     });
-});
+    });
 
+// -----------------------Fungsi generate Token dan encrypt data-----------------------------
+// -----------------------Fungsi generate Token dan encrypt data-----------------------------
+// -----------------------Fungsi generate Token dan encrypt data-----------------------------
 // function get token using njwt
 function getToken(user, secretKey, callback) {
     Roles.findById(user.role, function(err, roles) {
@@ -1133,10 +982,10 @@ function getToken(user, secretKey, callback) {
             callback(null, token);
         }
     });
-};
-
-// function encyrypt data
-function encryptData(data, encryptpass) {
+    };
+    
+// function encrypt data
+var encryptData = function (data, encryptpass) {
     if (MODE_DEVELOP === true) {    
         return JSON.parse(JSON.stringify({
             data: data
@@ -1148,153 +997,16 @@ function encryptData(data, encryptpass) {
             secta: true
         }));
     }
+    };
+module.exports = function(encryptData){ // Export fungsi encrypt data untuk digunakan di router lain
+    return encryptData;
 };
-
-// ----------------------------ROlE MANAGEMENT----------------------------------
-// ----------------------------ROlE MANAGEMENT----------------------------------
-// ----------------------------ROlE MANAGEMENT----------------------------------
-// ----------------------------ROlE MANAGEMENT----------------------------------
-
-router.post('/rolemanagement/create', function(req,res) {
-    var roleId = req.body.verifiedJwt.role;
-    Roles.findById(roleId, function(err, role){
-        if (err) {
-            res.status(404).send(err);
-        } else {
-            if(role.permissions.indexOf("create-role") !== -1) { // kondisi jika value tidak ada pada array (jika ada akan mereturn nilai (0-n) index value tersebut)
-                if(!req.body.rolename) {
-                    res.status(209)
-                        .send('Please Insert Data')
-                } else {
-                    Roles.findOne({ rolename: req.body.rolename }, function(err, rolename) {
-                        if(rolename) {
-                            res.status(409)
-                            .send('Rolename already exists!');
-                        } else {
-                            var newRole = new Roles({
-                                rolename: req.body.rolename,
-                                permissions: req.body.permissions
-                            });
-
-                            newRole.save(function(err, newRole) {
-                                if(err) {
-                                    res.status(409).send(err);
-                                }
-                                res.send(newRole.rolename + ' created!');
-                            });
-                        }
-                    });
-                }
-            } else {
-                res.status(403).send('YOU ARE FORBIDDEN!');
-            }
-        }
-    });
-});
-
-router.get('/rolemanagement/role-data', function(req, res) {
-    var roleId = req.body.verifiedJwt.role;
-    Roles.findById(roleId, function(err, role){
-        if (err) {
-            res.status(404).send(err)
-        } else {
-            if(role.permissions.indexOf("view-role-data") !== -1 ){ // kondisi jika value tidak ada pada array (jika ada akan mereturn nilai (0-n) index value tersebut)
-                Roles.find({}, function(err, roles){
-                    if (err){
-                        res.status(404).send(err);
-                    } else {
-                        // Encrypt    
-                        res.json( encryptData(roles, encryptpass) );
-                    }
-                })
-            } else {
-                res.status(403).send('YOU ARE FORBIDDEN!');
-            }
-        }
-    })
-});
-
-router.route('/rolemanagement/update/:id')
-    .get(function(req,res) {
-            Roles.findById(req.params.id, function(err, roles){
-                if(err){
-                    res.status(404).send(err);
-                } else {
-                    res.send(roles);
-                }
-            })
-    })
-
-    .put(function(req, res) {
-        var roleId = req.body.verifiedJwt.role;
-        Roles.findById(roleId, function(err, role){
-            if (err) {
-                res.status(404).send(err)
-            } else {
-                if(role.permissions.indexOf("update-role") !== -1 ){ // kondisi jika value tidak ada pada array (jika ada akan mereturn nilai (0-n) index value tersebut)    
-                    Roles.findById(req.params.id, function(err, roles) {
-                        if(req.params.id === req.body.verifiedJwt.role) {
-                            res.status(400).send("CANNOT UPDATE THIS ROLE!");
-                        } else {
-                            if(err) {
-                                res.status(404).send(err);
-                            } else {
-                                if(!req.body.rolename) {
-                                    res.status(209)
-                                    .send('Please insert the user data!');
-                                } else {
-                                    roles.rolename = req.body.rolename,
-                                    roles.permissions = req.body.permissions
-                                    
-                                    roles.save(function(err, roles){
-                                        if(err){
-                                            return err;
-                                        }
-                                        res.send(roles.rolename + ' succesfully updated');
-                                    });
-                                }
-                            }
-                        }
-                    })
-                } else {
-                    res.status(403).send('YOU ARE FORBIDDEN!');
-                }
-            }
-        });
-});
-    
-router.delete('/rolemanagement/delete/:id', function(req, res) {
-    var id_role = req.params.id;
-    var roleId = req.body.verifiedJwt.role;
-    Roles.findById(roleId, function(err, role){
-        if (err) {
-            res.status(404).send(err)
-        } else {
-            if(role.permissions.indexOf("delete-role") !== -1 ){ // kondisi jika value tidak ada pada array (jika ada akan mereturn nilai (0-n) index value tersebut)    
-                Roles.findById(id_role, function (err, role){
-                    if(err) {
-                        res.status(404).send(err);
-                    } else {
-                        User.find({role: id_role}, function(err, user) {
-                            if(user != '') {           
-                                res.status(400).send('Failed to delete this role');
-                            } else {
-                                role.remove();
-                                res.send('Role ' + role.rolename + ' deleted');
-                            }
-                        });    
-                    }
-                });
-            } else {
-                res.status(403).send('YOU ARE FORBIDDEN!');
-            }
-        }
-    });
-});
 
 // =============================================================================
 // all of our routes will be prefixed with /api
 app.use('/api', router);
+router.use('/usermanagement', require('./router-usermanagement')); // panggil router di file js lain
+router.use('/rolemanagement', require('./router-rolemanagement')); // panggil router di file js lain
 
 // START THE SERVER
 // =============================================================================
