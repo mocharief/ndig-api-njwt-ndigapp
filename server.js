@@ -43,7 +43,7 @@ app.use(cors());
 
 // configure app to use cors
 var corsOptions = {
-   origin : "*",
+   origin : true,
    allowedHeaders : ["*"],
    exposedHeaders : ["x-new-jwt"]
 };
@@ -54,7 +54,7 @@ var corsOptions = {
 //   res.header("Access-Control-Allow-Headers", "X-Requested-With");
 //   next();
 // });
-app.all('/*',cors(corsOptions));
+app.all('/*',cors(corsOptions)); // set seluruh router dengan cors
 
 // GLOBAL VARIABEL
 var port = process.env.PORT || 9099;        // set our port
