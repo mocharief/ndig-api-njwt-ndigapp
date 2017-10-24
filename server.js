@@ -80,10 +80,14 @@ var MODE_DEVELOP = false;
 var router = express.Router();              // get an instance of the express Router
 
 // middleware to use for all requests
-router.use(function(req, res, next) {    
+router.use(function(req, res, next) {   
     if(req.path !== ('/authenticate')) {
-        if (MODE_DEVELOP) {
-            var token = req.query.token;
+        if (MODE_DEVELOP || !req.headers.origin) {
+            if (!req.headers.origin) {
+                var token = req.headers.authorization
+            } else {
+                var token = req.query.token;
+            }
         } else {
             var bytes = CryptoJS.AES.decrypt(req.url.substr(1), encryptpass);
             var decryptURI = bytes.toString(CryptoJS.enc.Utf8);
@@ -106,7 +110,7 @@ router.use(function(req, res, next) {
                                     }
                                 });
                             }
-                                if (!MODE_DEVELOP) {
+                                if ( !MODE_DEVELOP && req.headers.origin ) {
                                     req.url = split[0].substr(4);
                                     req.originalUrl = split[0];
                                     req.verifiedJwt = verifiedJwt;
@@ -1066,7 +1070,6 @@ router.route('/pesanintelapp')
 // Mengakses semua pesan
 .get(function(req, res){
     var username = req.body.verifiedJwt.username;
-    console.log(username);
     PesanIntelApp.find({'dari': {$regex:username, $options: 'i'} }, function(err, pesans) {
         if(err) {
             res.status(404).send(err);
