@@ -43,7 +43,7 @@ app.use(cors());
 
 // configure app to use cors
 var corsOptions = {
-   origin : "http://localhost:9000",
+   origin : "http://192.168.1.244:9000",
    allowedHeaders : ["*"],
    exposedHeaders : ["x-new-jwt"]
 };
