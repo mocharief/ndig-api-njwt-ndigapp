@@ -80,7 +80,7 @@ var MODE_DEVELOP = false;
 var router = express.Router();              // get an instance of the express Router
 
 // middleware to use for all requests
-router.use(function(req, res, next) {   
+router.use(function(req, res, next) {    
     if(req.path !== ('/authenticate')) {
         if (MODE_DEVELOP || !req.headers.origin) {
             if (!req.headers.origin) {
