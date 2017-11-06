@@ -5,9 +5,9 @@ var PesanIntelAppSchema  = new Schema ({
     laporan: String,
     category: String,
     date: Date,
-    type: String,
     dari: String,
-    lokasi: Object,
+    lokasiUser: Object,
+    lokasiTKP: Object,
     attachmentInfo: Object
 });
 

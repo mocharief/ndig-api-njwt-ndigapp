@@ -1028,7 +1028,7 @@ router.route('/pesanintelapp')
         if(err) {
             res.status(404).send(err);
         } else {
-            if(!req.body.pesan || !req.body.category || !req.body.date || !req.body.type || !req.body.longitude || !req.body.latitude){
+            if(!req.body.pesan || !req.body.category || !req.body.date || !req.body.longitudeUser || !req.body.latitudeUser || !req.body.longitudeTKP || !req.body.latitudeTKP){
                 res.status(404).send('Data belum diisi lengkap!');
             } else {
                 var pesan = new PesanIntelApp();
@@ -1036,11 +1036,14 @@ router.route('/pesanintelapp')
                 pesan.laporan = req.body.pesan;
                 pesan.category = req.body.category;
                 pesan.date = req.body.date;
-                pesan.type = req.body.type;
                 pesan.dari = verifiedJwt.username;
-                pesan.lokasi = {
-                    longitude: req.body.longitude,
-                    latitude: req.body.latitude
+                pesan.lokasiUser = {
+                    longitude: req.body.longitudeUser,
+                    latitude: req.body.latitudeUser
+                };
+                pesan.lokasiTKP = {
+                    longitude: req.body.longitudeTKP,
+                    latitude: req.body.latitudeTKP
                 };
                     
                 pesan.attachmentInfo = req.files.map(function (info){
