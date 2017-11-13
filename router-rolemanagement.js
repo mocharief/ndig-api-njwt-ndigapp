@@ -2,7 +2,8 @@ var express = require('express'),
     router  = express.Router();
 var Roles   = require('./app/models/roles');
 var User    = require('./app/models/user');
-var encryptData = require('./server');
+var sourceFile = require('./server');
+var encryptData = sourceFile.encryptData;
 
 // ----------------------------ROlE MANAGEMENT----------------------------------
 // ----------------------------ROlE MANAGEMENT----------------------------------
@@ -58,7 +59,7 @@ router.get('/role-data', function(req, res) {
                         res.status(404).send(err);
                     } else {
                         // Encrypt    
-                        res.json( encryptData(roles, encryptData.encryptpass) );
+                        res.json( encryptData(roles, sourceFile.encryptpass) );
                     }
                 })
             } else {

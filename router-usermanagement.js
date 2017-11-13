@@ -2,7 +2,8 @@ var express = require('express'),
     router  = express.Router();
 var Roles   = require('./app/models/roles');
 var User    = require('./app/models/user');
-var encryptData = require('./server');
+var sourceFile = require('./server');
+var encryptData = sourceFile.encryptData;
 
 // -----------------------USER AUTHENTICATION-----------------------------
 // -----------------------USER AUTHENTICATION-----------------------------
@@ -67,7 +68,7 @@ router.route('/account-data')
                     if (err) {
                         res.status(404).send(err);
                     } else {
-                        res.json( encryptData(users, encryptData.encryptpass) );
+                        res.json( encryptData(users, sourceFile.encryptpass) );
                     }
                 })
             } else {

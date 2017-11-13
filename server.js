@@ -72,8 +72,9 @@ app.all('/*',cors(corsOptions)); // set seluruh router dengan cors
 // GLOBAL VARIABEL
 var port = process.env.PORT || 9099;        // set our port
 var START, END;
-var encryptpass = 'NDIG-DIAS';
-var MODE_DEVELOP = false;
+var encryptpass = 'NDIG-DIAS'; // key untuk encrypt data
+var MODE_DEVELOP = true; // mode untuk on=false/off=true encrypt data dan decrypt url
+var MODE_AUTH = false; // mode untuk on/off autentikasi dengan njwt, true jika ada autentikasi
 
 // ROUTES FOR OUR API
 // =============================================================================
@@ -81,54 +82,58 @@ var router = express.Router();              // get an instance of the express Ro
 
 // middleware to use for all requests
 router.use(function(req, res, next) {    
-    if(req.path !== ('/authenticate')) {
-        if (MODE_DEVELOP || !req.headers.origin) {
-            if (!req.headers.origin) {
-                var token = req.headers.authorization
-            } else {
-                var token = req.query.token;
-            }
-        } else {
-            var bytes = CryptoJS.AES.decrypt(req.url.substr(1), encryptpass);
-            var decryptURI = bytes.toString(CryptoJS.enc.Utf8);
-            var split = decryptURI.substr(1).slice(0, -1).split('?token=');
-            var token = split[1];
-        }
-            if (token) {
-                nJwt.verify(token, signingKey, function(err,verifiedJwt) {
-                    if (err) {
-                        res.status(400).send(err);
-                    } else {
-                        req.body.verifiedJwt = verifiedJwt.body;
-                        if (verifiedJwt.body.exp > Math.floor(Date.now()/1000)){
-                            if ((verifiedJwt.body.exp-Math.floor(Date.now()/1000)) <= 60*60*2) {
-                                getToken(verifiedJwt.body, signingKey, function(err, newToken){
-                                    if(err) {
-                                        res.status(401).send(err);
-                                    } else {
-                                        res.header({ 'x-new-jwt' : newToken });
-                                    }
-                                });
-                            }
-                                if ( !MODE_DEVELOP && req.headers.origin ) {
-                                    req.url = split[0].substr(4);
-                                    req.originalUrl = split[0];
-                                    req.verifiedJwt = verifiedJwt;
-                                }
-                            next();
-                        } else {
-                            res.status(401).send(verifiedJwt);
-                        }
-                    }
-                });
-            } else {
-                res.status(403).send({ 
-                    success: false, 
-                    message: 'No token provided.'
-                });
-            }
+    if (!MODE_AUTH){
+        next();
     } else {
-        next(); // make sure we go to the next routes and don't stop here
+        if(req.path !== ('/authenticate')) {
+            if (MODE_DEVELOP || !req.headers.origin) {
+                if (!req.headers.origin) {
+                    var token = req.headers.authorization
+                } else {
+                    var token = req.query.token;
+                }
+            } else {
+                var bytes = CryptoJS.AES.decrypt(req.url.substr(1), encryptpass);
+                var decryptURI = bytes.toString(CryptoJS.enc.Utf8);
+                var split = decryptURI.substr(1).slice(0, -1).split('?token=');
+                var token = split[1];
+            }
+                if (token) {
+                    nJwt.verify(token, signingKey, function(err,verifiedJwt) {
+                        if (err) {
+                            res.status(400).send(err);
+                        } else {
+                            req.body.verifiedJwt = verifiedJwt.body;
+                            if (verifiedJwt.body.exp > Math.floor(Date.now()/1000)){
+                                if ((verifiedJwt.body.exp-Math.floor(Date.now()/1000)) <= 60*60*2) {
+                                    getToken(verifiedJwt.body, signingKey, function(err, newToken){
+                                        if(err) {
+                                            res.status(401).send(err);
+                                        } else {
+                                            res.header({ 'x-new-jwt' : newToken });
+                                        }
+                                    });
+                                }
+                                    if ( !MODE_DEVELOP && req.headers.origin ) {
+                                        req.url = split[0].substr(4);
+                                        req.originalUrl = split[0];
+                                        req.verifiedJwt = verifiedJwt;
+                                    }
+                                next();
+                            } else {
+                                res.status(401).send(verifiedJwt);
+                            }
+                        }
+                    });
+                } else {
+                    res.status(403).send({ 
+                        success: false, 
+                        message: 'No token provided.'
+                    });
+                }
+        } else {
+            next(); // make sure we go to the next routes and don't stop here
+        }
     }
     // do logging
     console.log('---Something is happening---', req.params);
@@ -1015,8 +1020,9 @@ var encryptData = function (data, encryptpass) {
         }));
     }
     };
-module.exports = function(encryptData){ // Export fungsi encrypt data untuk digunakan di router lain
-    return encryptData;
+module.exports = {              // export kebutuhan di file lain
+    encryptpass: encryptpass,
+    encryptData: encryptData
 };
 
 // ROUTER FOR MOBILE NDIG-APP
